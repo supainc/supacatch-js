@@ -1,0 +1,7 @@
+{
+  "recommendations": [
+    "oxc.oxc-vscode",
+    "vscode-icons-team.vscode-icons",
+    "typescriptteam.native-preview"
+  ]
+}

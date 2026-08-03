@@ -1,0 +1,12 @@
+{
+  "biome.enabled": false,
+  "editor.quickSuggestions": { "strings": true },
+  "editor.defaultFormatter": "oxc.oxc-vscode",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.oxc": "always"
+  },
+  "js/ts.tsdk.path": "node_modules/.bun/typescript@7.0.2/node_modules/typescript",
+  "js/ts.tsdk.promptToUseWorkspaceVersion": true,
+  "js/ts.experimental.useTsgo": true
+}

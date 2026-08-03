@@ -1,0 +1,10 @@
+pre-commit:
+  parallel: false
+  jobs:
+    - name: lint
+      run: bun run lint --deny-warnings --no-error-on-unmatched-pattern {staged_files}
+      stage_fixed: true
+
+    - name: format
+      run: bun run format --no-error-on-unmatched-pattern {staged_files}
+      stage_fixed: true

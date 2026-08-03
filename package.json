@@ -1,0 +1,80 @@
+{
+  "name": "@supainc/supacatch-js",
+  "version": "0.1.0-alpha.0",
+  "description": "Official SupaCatch JavaScript SDK for Node.js, Bun, and Deno",
+  "keywords": [
+    "error-monitoring",
+    "supacatch"
+  ],
+  "homepage": "https://github.com/supainc/supacatch-js#readme",
+  "bugs": "https://github.com/supainc/supacatch-js/issues",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/supainc/supacatch-js.git"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./effect": {
+      "types": "./dist/effect.d.ts",
+      "import": "./dist/effect.js"
+    },
+    "./node": {
+      "types": "./dist/node.d.ts",
+      "import": "./dist/node.js"
+    },
+    "./bun": {
+      "types": "./dist/bun.d.ts",
+      "import": "./dist/bun.js"
+    },
+    "./deno": {
+      "types": "./dist/deno.d.ts",
+      "import": "./dist/deno.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "prepare": "effect-tsgo patch && lefthook install && ./scripts/prepare-effect.sh",
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "bun run build && vitest run",
+    "lint": "oxlint --fix",
+    "lint:check": "oxlint",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "check": "bun run lint:check && bun run format:check && bun run typecheck && bun run test && bun run build && bun publint"
+  },
+  "devDependencies": {
+    "@effect/tsgo": "0.36.4",
+    "@effect/vitest": "4.0.0-beta.103",
+    "@types/node": "26.2.0",
+    "effect": "4.0.0-beta.103",
+    "lefthook": "2.1.10",
+    "oxfmt": "0.63.0",
+    "oxlint": "1.78.0",
+    "publint": "0.3.23",
+    "typescript": "7.0.2",
+    "vitest": "4.1.10"
+  },
+  "peerDependencies": {
+    "effect": "4.0.0-beta.103"
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "packageManager": "bun@1.3.14"
+}
