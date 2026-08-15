@@ -2,7 +2,7 @@ import { Duration, Effect, Match, Predicate, Redacted, String as Str } from "eff
 import { InvalidConfigurationError } from "./errors.js";
 
 export interface SdkConfig {
-  readonly endpoint: string;
+  readonly endpoint?: string;
   readonly ingestKey: string;
   readonly requestTimeout?: number;
 }
@@ -13,6 +13,7 @@ export interface ResolvedConfig {
   readonly requestTimeout: Duration.Duration;
 }
 
+const defaultEndpoint = "https://ingest.catch.supa.dev";
 const defaultRequestTimeout = Duration.seconds(5);
 
 // Issue messages stay static so an invalid Ingest Key is never echoed back.
@@ -29,8 +30,9 @@ const isPositiveMillis = (value: number): boolean => Number.isFinite(value) && v
 
 export const resolveConfig = Effect.fn("SupaCatch.resolveConfig")(function* (input: SdkConfig) {
   yield* ensure(Predicate.isObjectKeyword(input), "configuration must be an object");
+  const endpoint = input.endpoint ?? defaultEndpoint;
   yield* ensure(
-    Predicate.isString(input.endpoint) && Str.isNonEmpty(input.endpoint),
+    Predicate.isString(endpoint) && Str.isNonEmpty(endpoint),
     "endpoint must be a non-empty URL",
   );
   yield* ensure(
@@ -51,7 +53,7 @@ export const resolveConfig = Effect.fn("SupaCatch.resolveConfig")(function* (inp
   );
 
   const eventUrl = yield* Effect.try({
-    try: () => new URL(input.endpoint),
+    try: () => new URL(endpoint),
     catch: () => invalidConfiguration("endpoint must be a valid URL"),
   });
   yield* Match.value(eventUrl.protocol).pipe(

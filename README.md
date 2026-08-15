@@ -32,10 +32,7 @@ import { init } from "@supainc/supacatch-js/node";
 const ingestKey = process.env.SUPACATCH_INGEST_KEY;
 if (!ingestKey) throw new Error("SUPACATCH_INGEST_KEY is required");
 
-const supaCatch = init({
-  endpoint: "https://your-ingest.example.com",
-  ingestKey,
-});
+const supaCatch = init({ ingestKey });
 ```
 
 ### Bun
@@ -46,10 +43,7 @@ import { init } from "@supainc/supacatch-js/bun";
 const ingestKey = Bun.env.SUPACATCH_INGEST_KEY;
 if (!ingestKey) throw new Error("SUPACATCH_INGEST_KEY is required");
 
-const supaCatch = init({
-  endpoint: "https://your-ingest.example.com",
-  ingestKey,
-});
+const supaCatch = init({ ingestKey });
 ```
 
 ### Deno
@@ -60,6 +54,12 @@ import { init } from "npm:@supainc/supacatch-js@alpha/deno";
 const ingestKey = Deno.env.get("SUPACATCH_INGEST_KEY");
 if (!ingestKey) throw new Error("SUPACATCH_INGEST_KEY is required");
 
+const supaCatch = init({ ingestKey });
+```
+
+The SDK sends Events to `https://ingest.catch.supa.dev` by default. You can override it when needed:
+
+```ts
 const supaCatch = init({
   endpoint: "https://your-ingest.example.com",
   ingestKey,
@@ -85,7 +85,6 @@ const ingestKey = process.env.SUPACATCH_INGEST_KEY;
 if (!ingestKey) throw new Error("SUPACATCH_INGEST_KEY is required");
 
 const supaCatch = createClient({
-  endpoint: "https://your-ingest.example.com",
   ingestKey,
   requestTimeout: 5_000,
 });
@@ -107,14 +106,7 @@ if (!ingestKey) throw new Error("SUPACATCH_INGEST_KEY is required");
 const program = Effect.gen(function* () {
   const supaCatch = yield* SupaCatch;
   return yield* supaCatch.captureException(new Error("Example failure"));
-}).pipe(
-  Effect.provide(
-    layerFetch({
-      endpoint: "https://your-ingest.example.com",
-      ingestKey,
-    }),
-  ),
-);
+}).pipe(Effect.provide(layerFetch({ ingestKey })));
 ```
 
 Expected failures remain typed in the Effect error channel and reject Promise calls as the corresponding public error instances.
@@ -130,14 +122,7 @@ const program = Effect.gen(function* () {
   const supaCatch = yield* SupaCatch;
   yield* supaCatch.captureException("manual capture still uses the same client");
   yield* Effect.never;
-}).pipe(
-  Effect.provide(
-    layer({
-      endpoint: "https://your-ingest.example.com",
-      ingestKey,
-    }),
-  ),
-);
+}).pipe(Effect.provide(layer({ ingestKey })));
 
 await Effect.runPromise(program);
 ```

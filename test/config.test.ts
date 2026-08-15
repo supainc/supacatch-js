@@ -4,7 +4,13 @@ import { resolveConfig } from "../src/config.js";
 import { InvalidConfigurationError } from "../src/errors.js";
 
 describe("configuration", () => {
-  it("builds the ingest Event URL without retaining query data", () => {
+  it("uses the SupaCatch ingest endpoint by default", () => {
+    const config = Effect.runSync(resolveConfig({ ingestKey: "sck_12345678" }));
+
+    assert.strictEqual(config.eventUrl.toString(), "https://ingest.catch.supa.dev/v1/events");
+  });
+
+  it("builds an overridden ingest Event URL without retaining query data", () => {
     const config = Effect.runSync(
       resolveConfig({
         endpoint: "https://ingest.example.test/base/?private=value",

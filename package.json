@@ -1,6 +1,6 @@
 {
   "name": "@supainc/supacatch-js",
-  "version": "0.1.0-alpha.0",
+  "version": "0.1.0-alpha.1",
   "description": "Official SupaCatch JavaScript SDK for Node.js, Bun, and Deno",
   "keywords": [
     "error-monitoring",
