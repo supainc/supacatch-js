@@ -9,7 +9,7 @@ import {
   type FatalAdapterShape,
   installFatalCapture,
 } from "../src/internal/fatal.js";
-import { init, layer } from "../src/node.js";
+import * as SupaCatch from "../src/node.js";
 import { accepted, listen, silent } from "./server.js";
 
 const config = {
@@ -123,11 +123,11 @@ describe("Node.js global handlers", () => {
     const uncaughtBefore = process.listenerCount("uncaughtException");
     const rejectionBefore = process.listenerCount("unhandledRejection");
 
-    const first = init(config);
+    const first = SupaCatch.init(config);
     assert.strictEqual(process.listenerCount("uncaughtException"), uncaughtBefore + 1);
     assert.strictEqual(process.listenerCount("unhandledRejection"), rejectionBefore + 1);
 
-    const second = init(config);
+    const second = SupaCatch.init(config);
     assert.strictEqual(process.listenerCount("uncaughtException"), uncaughtBefore + 1);
     assert.strictEqual(process.listenerCount("unhandledRejection"), rejectionBefore + 1);
 
@@ -149,7 +149,7 @@ describe("Node.js global handlers", () => {
         assert.strictEqual(process.listenerCount("uncaughtException"), uncaughtBefore + 1);
         assert.strictEqual(process.listenerCount("unhandledRejection"), rejectionBefore + 1);
         yield* Effect.void;
-      }).pipe(Effect.provide(layer(config))),
+      }).pipe(Effect.provide(SupaCatch.layer(config))),
     );
 
     assert.strictEqual(process.listenerCount("uncaughtException"), uncaughtBefore);
@@ -198,7 +198,7 @@ const runFatalFixture = async (
     kind === "exception"
       ? 'setTimeout(() => { throw new Error("automatic exception") }, 0); await new Promise(() => {})'
       : 'Promise.reject(new Error("automatic rejection")); await new Promise(() => setTimeout(() => {}, 5_000))';
-  const code = `import { init } from ${JSON.stringify(moduleUrl)}; init({ endpoint: ${JSON.stringify(
+  const code = `import * as SupaCatch from ${JSON.stringify(moduleUrl)}; SupaCatch.init({ endpoint: ${JSON.stringify(
     server.endpoint,
   )}, ingestKey: "sck_test_key" }); ${failure};`;
 

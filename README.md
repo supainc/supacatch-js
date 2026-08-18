@@ -17,7 +17,7 @@ bun add @supainc/supacatch-js@alpha
 Deno resolves the package through npm:
 
 ```ts
-import { init } from "npm:@supainc/supacatch-js@alpha/deno";
+import * as SupaCatch from "npm:@supainc/supacatch-js@alpha/deno";
 ```
 
 ## Automatic capture
@@ -27,34 +27,34 @@ Use the entry point for your runtime. Initialization automatically captures unca
 ### Node.js
 
 ```ts
-import { init } from "@supainc/supacatch-js/node";
+import * as SupaCatch from "@supainc/supacatch-js/node";
 
 const ingestKey = process.env.SUPACATCH_INGEST_KEY;
 if (!ingestKey) throw new Error("SUPACATCH_INGEST_KEY is required");
 
-const supaCatch = init({ ingestKey });
+const supaCatch = SupaCatch.init({ ingestKey });
 ```
 
 ### Bun
 
 ```ts
-import { init } from "@supainc/supacatch-js/bun";
+import * as SupaCatch from "@supainc/supacatch-js/bun";
 
 const ingestKey = Bun.env.SUPACATCH_INGEST_KEY;
 if (!ingestKey) throw new Error("SUPACATCH_INGEST_KEY is required");
 
-const supaCatch = init({ ingestKey });
+const supaCatch = SupaCatch.init({ ingestKey });
 ```
 
 ### Deno
 
 ```ts
-import { init } from "npm:@supainc/supacatch-js@alpha/deno";
+import * as SupaCatch from "npm:@supainc/supacatch-js@alpha/deno";
 
 const ingestKey = Deno.env.get("SUPACATCH_INGEST_KEY");
 if (!ingestKey) throw new Error("SUPACATCH_INGEST_KEY is required");
 
-const supaCatch = init({ ingestKey });
+const supaCatch = SupaCatch.init({ ingestKey });
 ```
 
 ### Cloudflare Workers
@@ -77,16 +77,18 @@ export default SupaCatch.withCatch((env: Env) => ({ ingestKey: env.SUPACATCH_ING
 
 When the handler throws or rejects, the wrapper attempts delivery for at most two seconds and then rethrows the original value. Capture failures never replace the Worker exception. The wrapper catches only failures that propagate through the `fetch` handler; module initialization failures, detached tasks, and platform terminations require a Tail Worker.
 
-The SDK sends Events to `https://ingest.catch.supa.dev` by default. You can override it when needed:
+The SDK sends Events to `https://ingest.catch.supa.dev` by default. For Node.js, Bun, and Deno, you can override it when needed:
 
 ```ts
-const supaCatch = init({
+const supaCatch = SupaCatch.init({
   endpoint: "https://your-ingest.example.com",
   ingestKey,
 });
 ```
 
-Fatal capture waits for delivery for at most two seconds and then preserves fatal termination. Call `init` inside every worker or isolate that should capture failures.
+For Cloudflare Workers, return the same `endpoint` option from the configuration function passed to `SupaCatch.withCatch`.
+
+Fatal capture waits for delivery for at most two seconds and then preserves fatal termination. Call `SupaCatch.init` inside every worker or isolate that should capture failures.
 
 Only the latest initialized client owns automatic capture. `dispose()` removes that client's handlers:
 
