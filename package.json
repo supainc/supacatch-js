@@ -47,8 +47,14 @@
       "import": "./dist/cloudflare.js"
     },
     "./tanstack-start": {
-      "types": "./dist/tanstack-start.d.ts",
-      "import": "./dist/tanstack-start.js"
+      "types": "./dist/tanstack/server.d.ts",
+      "workerd": "./dist/tanstack/server.js",
+      "worker": "./dist/tanstack/server.js",
+      "browser": "./dist/tanstack/client.js",
+      "node": "./dist/tanstack/server.js",
+      "bun": "./dist/tanstack/server.js",
+      "deno": "./dist/tanstack/server.js",
+      "import": "./dist/tanstack/server.js"
     },
     "./package.json": "./package.json"
   },

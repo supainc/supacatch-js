@@ -22,10 +22,11 @@ const fatalDeliveryDeadline = Duration.seconds(2);
 // handlers, across every client and runtime in the process.
 const activeRegistration = MutableRef.make(Option.none<ActiveRegistration>());
 
+export const beforeFatal = (capture: Effect.Effect<unknown, unknown>): Effect.Effect<void> =>
+  Effect.raceFirst(capture.pipe(Effect.ignoreCause), Effect.sleep(fatalDeliveryDeadline));
+
 export const captureBeforeFatal = (capture: Effect.Effect<unknown, unknown>): Promise<void> =>
-  Effect.runPromise(
-    Effect.raceFirst(capture.pipe(Effect.ignoreCause), Effect.sleep(fatalDeliveryDeadline)),
-  );
+  Effect.runPromise(beforeFatal(capture));
 
 export const installFatalCapture = Effect.fn("SupaCatch.installFatalCapture")(function* (
   capture: (value: unknown) => Promise<void>,

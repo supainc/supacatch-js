@@ -4,6 +4,7 @@ import type { SdkConfig } from "../config.js";
 import type { InvalidConfigurationError } from "../errors.js";
 import { layer as supaCatchLayer, SupaCatch } from "../effect.js";
 import { createClient, type SupaCatchClient } from "../client.js";
+import { registerAutomatic } from "./automatic.js";
 import {
   captureBeforeFatal,
   FatalAdapter,
@@ -20,9 +21,13 @@ export const init = (config: SdkConfig, adapter: FatalAdapterShape): SupaCatchCl
     ).pipe(Effect.provideService(FatalAdapter, adapter)),
   );
 
+  const deactivateClient = registerAutomatic((value) =>
+    Effect.tryPromise(() => client.captureException(value)),
+  );
   return {
     captureException: client.captureException,
     dispose: () => {
+      deactivateClient();
       removeHandlers();
       client.dispose();
     },
@@ -37,6 +42,10 @@ export const layer = (
     SupaCatch,
     Effect.gen(function* () {
       const service = yield* SupaCatch;
+      yield* Effect.acquireRelease(
+        Effect.sync(() => registerAutomatic(service.captureException)),
+        (deactivate) => Effect.sync(deactivate),
+      );
       yield* installFatalCaptureScoped((value) =>
         captureBeforeFatal(service.captureException(value)),
       );

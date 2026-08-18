@@ -79,56 +79,47 @@ When the handler throws or rejects, the wrapper attempts delivery for at most tw
 
 ### TanStack Start
 
-The TanStack Start adapter captures server-side failures from requests, Server Functions, and the server entry point. Keep this setup in server code; the Ingest Key must never enter a browser bundle.
+The TanStack Start adapter captures server-side failures from requests, Server Functions, and the server entry point. It uses conditional exports: server builds receive the capture implementation, while browser builds receive middleware stubs with no server handler. The Ingest Key and SDK client therefore never enter the browser module graph.
 
-Create one client in a server-only module:
-
-```ts
-// src/supacatch.server.ts
-import { createClient } from "@supainc/supacatch-js";
-
-const ingestKey = process.env.SUPACATCH_INGEST_KEY;
-if (!ingestKey) throw new Error("SUPACATCH_INGEST_KEY is required");
-
-export const supaCatch = createClient({ ingestKey });
-```
-
-Add the two global middlewares first in their arrays:
+Add the two global middlewares first in their arrays. Import them directly from the package; do not put them in a `*.server.ts` module because `src/start.ts` is also transformed for the browser.
 
 ```ts
 // src/start.ts
 import {
-  supaCatchFunctionMiddleware,
-  supaCatchRequestMiddleware,
+  supaCatchGlobalFunctionMiddleware,
+  supaCatchGlobalRequestMiddleware,
 } from "@supainc/supacatch-js/tanstack-start";
 import { createStart } from "@tanstack/react-start";
-import { supaCatch } from "./supacatch.server.js";
 
 export const startInstance = createStart(() => ({
-  requestMiddleware: [supaCatchRequestMiddleware(supaCatch)],
-  functionMiddleware: [supaCatchFunctionMiddleware(supaCatch)],
+  requestMiddleware: [supaCatchGlobalRequestMiddleware],
+  functionMiddleware: [supaCatchGlobalFunctionMiddleware],
 }));
 ```
 
-Wrap the explicit server entry with the same client to capture failures that escape the middleware chain:
+Initialize the runtime in an explicit server entry and wrap its handler. Runtime initialization registers the capture client used by the global middlewares.
 
 ```ts
 // src/server.ts
+import * as SupaCatch from "@supainc/supacatch-js/node";
 import { withSupaCatch } from "@supainc/supacatch-js/tanstack-start";
 import handler, { createServerEntry } from "@tanstack/react-start/server-entry";
-import { supaCatch } from "./supacatch.server.js";
+
+const ingestKey = process.env.SUPACATCH_INGEST_KEY;
+if (!ingestKey) throw new Error("SUPACATCH_INGEST_KEY is required");
+
+SupaCatch.init({ ingestKey });
 
 export default createServerEntry(
-  withSupaCatch(
-    {
-      fetch(request: Request) {
-        return handler.fetch(request);
-      },
+  withSupaCatch({
+    fetch(request: Request) {
+      return handler.fetch(request);
     },
-    supaCatch,
-  ),
+  }),
 );
 ```
+
+For Cloudflare Workers, compose `SupaCatch.withCatch` from the Cloudflare entry point around `withSupaCatch`. Each request resolves its environment configuration lazily and supplies a request-scoped client to the TanStack middlewares.
 
 The adapter waits for each Event submission before rethrowing the original failure. The client's `requestTimeout` therefore bounds the added failure-path latency. Capture failures never replace application failures, and the same `Error` passing through nested adapter layers is submitted once.
 
@@ -207,7 +198,7 @@ const program = Effect.gen(function* () {
 await Effect.runPromise(program);
 ```
 
-The runtime Layer removes its global handlers automatically when its scope closes.
+The runtime Layer removes its global handlers and TanStack automatic capture registration when its scope closes.
 
 ## Privacy and delivery semantics
 
