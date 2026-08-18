@@ -1,7 +1,7 @@
 import { Context, Effect, Layer } from "effect";
-import { FetchHttpClient, HttpClient } from "effect/unstable/http";
+import { HttpClient } from "effect/unstable/http";
 import { captureWith } from "./capture.js";
-import type { ResolvedConfig, SdkConfig } from "./config.js";
+import type { SdkConfig } from "./config.js";
 import { resolveConfig } from "./config.js";
 import type { CaptureError, InvalidConfigurationError } from "./errors.js";
 import type { EventId } from "./event.js";
@@ -13,30 +13,20 @@ export class SupaCatch extends Context.Service<
   }
 >()("@supainc/supacatch-js/SupaCatch") {}
 
-export const makeSupaCatchResolved = Effect.fn(function* (resolved: ResolvedConfig) {
-  const httpClient = yield* HttpClient.HttpClient;
-  return SupaCatch.of({
-    captureException: (value) => captureWith(httpClient, resolved, value),
-  });
-});
-
-export const makeSupaCatch = Effect.fn(function* (config: SdkConfig) {
-  const resolved = yield* resolveConfig(config);
-  return yield* makeSupaCatchResolved(resolved);
-});
-
-export const layerResolved = (
-  resolved: ResolvedConfig,
-): Layer.Layer<SupaCatch, never, HttpClient.HttpClient> =>
-  Layer.effect(SupaCatch)(makeSupaCatchResolved(resolved));
-
 export const layer = (
   config: SdkConfig,
 ): Layer.Layer<SupaCatch, InvalidConfigurationError, HttpClient.HttpClient> =>
-  Layer.effect(SupaCatch)(makeSupaCatch(config));
+  Layer.effect(
+    SupaCatch,
+    Effect.gen(function* () {
+      const resolved = yield* resolveConfig(config);
+      const httpClient = yield* HttpClient.HttpClient;
 
-export const layerFetch = (config: SdkConfig): Layer.Layer<SupaCatch, InvalidConfigurationError> =>
-  layer(config).pipe(Layer.provide(FetchHttpClient.layer));
+      return SupaCatch.of({
+        captureException: (value) => captureWith(httpClient, resolved, value),
+      });
+    }),
+  );
 
 export type { SdkConfig } from "./config.js";
 export * from "./errors.js";

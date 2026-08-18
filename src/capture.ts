@@ -1,6 +1,6 @@
-import { Cause, DateTime, Duration, Effect, Match } from "effect";
+import { Cause, DateTime, Duration, Effect, Match, String as Str } from "effect";
 import { HttpClient, HttpClientRequest, HttpClientResponse } from "effect/unstable/http";
-import type { ResolvedConfig } from "./config.js";
+import type { RuntimeConfig } from "./config.js";
 import {
   CaptureTimeoutError,
   InvalidSuccessResponseError,
@@ -14,13 +14,18 @@ import { EventRequest, normalizeException, SubmitEventResponse } from "./event.j
 
 export const captureWith = Effect.fn("SupaCatch.captureException")(function* (
   httpClient: HttpClient.HttpClient,
-  config: ResolvedConfig,
+  config: RuntimeConfig,
   value: unknown,
 ) {
   const now = yield* DateTime.now;
   const payload = normalizeException(value, now);
 
-  const request = yield* HttpClientRequest.post(config.eventUrl).pipe(
+  const eventUrl = new URL(config.endpoint);
+  eventUrl.pathname = `${Str.replace(/\/$/, "")(eventUrl.pathname)}/v1/events`;
+  eventUrl.search = "";
+  eventUrl.hash = "";
+
+  const request = yield* HttpClientRequest.post(eventUrl).pipe(
     HttpClientRequest.bearerToken(config.ingestKey),
     HttpClientRequest.acceptJson,
     HttpClientRequest.schemaBodyJson(EventRequest)(payload),

@@ -7,10 +7,10 @@ describe("configuration", () => {
   it("uses the SupaCatch ingest endpoint by default", () => {
     const config = Effect.runSync(resolveConfig({ ingestKey: "sck_12345678" }));
 
-    assert.strictEqual(config.eventUrl.toString(), "https://ingest.catch.supa.dev/v1/events");
+    assert.strictEqual(config.endpoint.toString(), "https://ingest.catch.supa.dev/");
   });
 
-  it("builds an overridden ingest Event URL without retaining query data", () => {
+  it("retains the configured ingest base URL", () => {
     const config = Effect.runSync(
       resolveConfig({
         endpoint: "https://ingest.example.test/base/?private=value",
@@ -18,7 +18,10 @@ describe("configuration", () => {
       }),
     );
 
-    assert.strictEqual(config.eventUrl.toString(), "https://ingest.example.test/base/v1/events");
+    assert.strictEqual(
+      config.endpoint.toString(),
+      "https://ingest.example.test/base/?private=value",
+    );
     assert.strictEqual(Duration.toMillis(config.requestTimeout), 5_000);
     assert.strictEqual(Redacted.value(config.ingestKey), "sck_12345678");
   });

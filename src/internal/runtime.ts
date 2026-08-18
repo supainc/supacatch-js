@@ -2,7 +2,7 @@ import { Effect, Layer } from "effect";
 import { FetchHttpClient } from "effect/unstable/http";
 import type { SdkConfig } from "../config.js";
 import type { InvalidConfigurationError } from "../errors.js";
-import { makeSupaCatch, SupaCatch } from "../effect.js";
+import { layer as supaCatchLayer, SupaCatch } from "../effect.js";
 import { createClient, type SupaCatchClient } from "../client.js";
 import {
   captureBeforeFatal,
@@ -33,12 +33,13 @@ export const layer = (
   config: SdkConfig,
   adapter: FatalAdapterShape,
 ): Layer.Layer<SupaCatch, InvalidConfigurationError> =>
-  Layer.effect(SupaCatch)(
+  Layer.effect(
+    SupaCatch,
     Effect.gen(function* () {
-      const service = yield* makeSupaCatch(config);
+      const service = yield* SupaCatch;
       yield* installFatalCaptureScoped((value) =>
         captureBeforeFatal(service.captureException(value)),
       );
       return service;
     }).pipe(Effect.provideService(FatalAdapter, adapter)),
-  ).pipe(Layer.provide(FetchHttpClient.layer));
+  ).pipe(Layer.provide(supaCatchLayer(config)), Layer.provide(FetchHttpClient.layer));

@@ -1,73 +1,40 @@
-import { Duration, Effect, Match, Predicate, Redacted, String as Str } from "effect";
+import { Duration, Effect, Schema } from "effect";
 import { InvalidConfigurationError } from "./errors.js";
 
-export interface SdkConfig {
-  readonly endpoint?: string;
-  readonly ingestKey: string;
-  readonly requestTimeout?: number;
-}
-
-export interface ResolvedConfig {
-  readonly eventUrl: URL;
-  readonly ingestKey: Redacted.Redacted<string>;
-  readonly requestTimeout: Duration.Duration;
-}
-
-const defaultEndpoint = "https://ingest.catch.supa.dev";
-const defaultRequestTimeout = Duration.seconds(5);
-
-// Issue messages stay static so an invalid Ingest Key is never echoed back.
-const invalidConfiguration = (issue: string): InvalidConfigurationError =>
-  new InvalidConfigurationError({ issue });
-
-const ensure = (
-  condition: boolean,
-  issue: string,
-): Effect.Effect<void, InvalidConfigurationError> =>
-  condition ? Effect.void : Effect.fail(invalidConfiguration(issue));
-
-const isPositiveMillis = (value: number): boolean => Number.isFinite(value) && value > 0;
-
-export const resolveConfig = Effect.fn("SupaCatch.resolveConfig")(function* (input: SdkConfig) {
-  yield* ensure(Predicate.isObjectKeyword(input), "configuration must be an object");
-  const endpoint = input.endpoint ?? defaultEndpoint;
-  yield* ensure(
-    Predicate.isString(endpoint) && Str.isNonEmpty(endpoint),
-    "endpoint must be a non-empty URL",
-  );
-  yield* ensure(
-    Predicate.isString(input.ingestKey) && input.ingestKey.length >= 8,
-    "Ingest Key must contain at least 8 characters",
-  );
-
-  const requestTimeout = yield* Match.value(input.requestTimeout).pipe(
-    Match.when(Predicate.isUndefined, () => Effect.succeed(defaultRequestTimeout)),
-    Match.when(
-      (candidate): candidate is number =>
-        Predicate.isNumber(candidate) && isPositiveMillis(candidate),
-      (millis) => Effect.succeed(Duration.millis(millis)),
+const Config = Schema.Struct({
+  endpoint: Schema.URLFromString.pipe(
+    Schema.check(
+      Schema.makeFilter((endpoint) =>
+        endpoint.protocol === "http:" || endpoint.protocol === "https:"
+          ? true
+          : "endpoint must use HTTP or HTTPS",
+      ),
     ),
-    Match.orElse(() =>
-      Effect.fail(invalidConfiguration("requestTimeout must be a positive number of milliseconds")),
+    Schema.withDecodingDefault(Effect.succeed("https://ingest.catch.supa.dev")),
+  ),
+  ingestKey: Schema.RedactedFromValue(Schema.String.pipe(Schema.check(Schema.isMinLength(8)))),
+  requestTimeout: Schema.DurationFromMillis.pipe(
+    Schema.check(
+      Schema.makeFilter((requestTimeout) =>
+        Duration.isFinite(requestTimeout) && Duration.isPositive(requestTimeout)
+          ? true
+          : "requestTimeout must be a positive number of milliseconds",
+      ),
     ),
-  );
-
-  const eventUrl = yield* Effect.try({
-    try: () => new URL(endpoint),
-    catch: () => invalidConfiguration("endpoint must be a valid URL"),
-  });
-  yield* Match.value(eventUrl.protocol).pipe(
-    Match.whenOr("http:", "https:", () => Effect.void),
-    Match.orElse(() => Effect.fail(invalidConfiguration("endpoint must use HTTP or HTTPS"))),
-  );
-
-  eventUrl.pathname = `${Str.replace(/\/$/, "")(eventUrl.pathname)}/v1/events`;
-  eventUrl.search = "";
-  eventUrl.hash = "";
-
-  return {
-    eventUrl,
-    ingestKey: Redacted.make(input.ingestKey),
-    requestTimeout,
-  } satisfies ResolvedConfig;
+    Schema.withDecodingDefault(Effect.succeed(5_000)),
+  ),
 });
+
+export type SdkConfig = typeof Config.Encoded;
+export type RuntimeConfig = typeof Config.Type;
+
+export const resolveConfig = Effect.fn("SupaCatch.resolveConfig")((input: SdkConfig) =>
+  Schema.decodeEffect(Config)(input).pipe(
+    Effect.mapError(
+      (error) =>
+        new InvalidConfigurationError({
+          issue: error.message,
+        }),
+    ),
+  ),
+);

@@ -1,7 +1,8 @@
 import { assert, describe, it } from "@effect/vitest";
-import { Effect } from "effect";
+import { Effect, Layer } from "effect";
+import { FetchHttpClient } from "effect/unstable/http";
 import { createClient } from "../src/index.js";
-import { SupaCatch, layerFetch } from "../src/effect.js";
+import { layer, SupaCatch } from "../src/effect.js";
 import {
   CaptureTimeoutError,
   InvalidSuccessResponseError,
@@ -14,13 +15,16 @@ describe("captureException", () => {
   it("submits one Event and returns its Event ID", async () => {
     const server = await listen(accepted);
     try {
-      const client = createClient({ endpoint: server.endpoint, ingestKey: "sck_test_key" });
+      const client = createClient({
+        endpoint: `${server.endpoint}/base/?private=value`,
+        ingestKey: "sck_test_key",
+      });
       const acceptedId = await client.captureException(new Error("boom"));
 
       assert.strictEqual(acceptedId, eventId);
       assert.lengthOf(server.requests, 1);
       assert.strictEqual(server.requests[0]?.authorization, "Bearer sck_test_key");
-      assert.strictEqual(server.requests[0]?.url, "/v1/events");
+      assert.strictEqual(server.requests[0]?.url, "/base/v1/events");
       assert.include(server.requests[0]?.body ?? "", '"message":"boom"');
     } finally {
       await server.close();
@@ -35,7 +39,11 @@ describe("captureException", () => {
           const supaCatch = yield* SupaCatch;
           return yield* supaCatch.captureException("effect failure");
         }).pipe(
-          Effect.provide(layerFetch({ endpoint: server.endpoint, ingestKey: "sck_test_key" })),
+          Effect.provide(
+            layer({ endpoint: server.endpoint, ingestKey: "sck_test_key" }).pipe(
+              Layer.provide(FetchHttpClient.layer),
+            ),
+          ),
         ),
       );
 

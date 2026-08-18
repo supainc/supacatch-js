@@ -97,8 +97,9 @@ const eventId = await supaCatch.captureException(new Error("Example failure"));
 ## Effect
 
 ```ts
-import { Effect } from "effect";
-import { SupaCatch, layerFetch } from "@supainc/supacatch-js/effect";
+import { Effect, Layer } from "effect";
+import { FetchHttpClient } from "effect/unstable/http";
+import { layer, SupaCatch } from "@supainc/supacatch-js/effect";
 
 const ingestKey = process.env.SUPACATCH_INGEST_KEY;
 if (!ingestKey) throw new Error("SUPACATCH_INGEST_KEY is required");
@@ -106,7 +107,7 @@ if (!ingestKey) throw new Error("SUPACATCH_INGEST_KEY is required");
 const program = Effect.gen(function* () {
   const supaCatch = yield* SupaCatch;
   return yield* supaCatch.captureException(new Error("Example failure"));
-}).pipe(Effect.provide(layerFetch({ ingestKey })));
+}).pipe(Effect.provide(layer({ ingestKey }).pipe(Layer.provide(FetchHttpClient.layer))));
 ```
 
 Expected failures remain typed in the Effect error channel and reject Promise calls as the corresponding public error instances.
