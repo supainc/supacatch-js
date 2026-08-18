@@ -4,7 +4,8 @@
   "description": "Official SupaCatch JavaScript SDK for Node.js, Bun, Deno, and Cloudflare Workers",
   "keywords": [
     "error-monitoring",
-    "supacatch"
+    "supacatch",
+    "tanstack-start"
   ],
   "homepage": "https://github.com/supainc/supacatch-js#readme",
   "bugs": "https://github.com/supainc/supacatch-js/issues",
@@ -44,6 +45,10 @@
     "./cloudflare": {
       "types": "./dist/cloudflare.d.ts",
       "import": "./dist/cloudflare.js"
+    },
+    "./tanstack-start": {
+      "types": "./dist/tanstack-start.d.ts",
+      "import": "./dist/tanstack-start.js"
     },
     "./package.json": "./package.json"
   },

@@ -77,6 +77,63 @@ export default SupaCatch.withCatch((env: Env) => ({ ingestKey: env.SUPACATCH_ING
 
 When the handler throws or rejects, the wrapper attempts delivery for at most two seconds and then rethrows the original value. Capture failures never replace the Worker exception. The wrapper catches only failures that propagate through the `fetch` handler; module initialization failures, detached tasks, and platform terminations require a Tail Worker.
 
+### TanStack Start
+
+The TanStack Start adapter captures server-side failures from requests, Server Functions, and the server entry point. Keep this setup in server code; the Ingest Key must never enter a browser bundle.
+
+Create one client in a server-only module:
+
+```ts
+// src/supacatch.server.ts
+import { createClient } from "@supainc/supacatch-js";
+
+const ingestKey = process.env.SUPACATCH_INGEST_KEY;
+if (!ingestKey) throw new Error("SUPACATCH_INGEST_KEY is required");
+
+export const supaCatch = createClient({ ingestKey });
+```
+
+Add the two global middlewares first in their arrays:
+
+```ts
+// src/start.ts
+import {
+  supaCatchFunctionMiddleware,
+  supaCatchRequestMiddleware,
+} from "@supainc/supacatch-js/tanstack-start";
+import { createStart } from "@tanstack/react-start";
+import { supaCatch } from "./supacatch.server.js";
+
+export const startInstance = createStart(() => ({
+  requestMiddleware: [supaCatchRequestMiddleware(supaCatch)],
+  functionMiddleware: [supaCatchFunctionMiddleware(supaCatch)],
+}));
+```
+
+Wrap the explicit server entry with the same client to capture failures that escape the middleware chain:
+
+```ts
+// src/server.ts
+import { withSupaCatch } from "@supainc/supacatch-js/tanstack-start";
+import handler, { createServerEntry } from "@tanstack/react-start/server-entry";
+import { supaCatch } from "./supacatch.server.js";
+
+export default createServerEntry(
+  withSupaCatch(
+    {
+      fetch(request: Request) {
+        return handler.fetch(request);
+      },
+    },
+    supaCatch,
+  ),
+);
+```
+
+The adapter waits for each Event submission before rethrowing the original failure. The client's `requestTimeout` therefore bounds the added failure-path latency. Capture failures never replace application failures, and the same `Error` passing through nested adapter layers is submitted once.
+
+Exceptions consumed by an application error boundary or converted into an SSR error response before reaching these seams require manual `captureException` calls.
+
 The SDK sends Events to `https://ingest.catch.supa.dev` by default. For Node.js, Bun, and Deno, you can override it when needed:
 
 ```ts
