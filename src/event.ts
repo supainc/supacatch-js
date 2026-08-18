@@ -1,4 +1,4 @@
-import { DateTime, identity, Match, Option, Predicate, pipe, Schema, String as Str } from "effect";
+import { DateTime, Option, Predicate, Schema } from "effect";
 
 export const EventId = Schema.String.pipe(Schema.check(Schema.isUUID(7)), Schema.brand("EventId"));
 export type EventId = typeof EventId.Type;
@@ -20,74 +20,60 @@ export class SubmitEventResponse extends Schema.Class<SubmitEventResponse>("Subm
   eventId: EventId,
 }) {}
 
-const truncate = (maximumLength: number): ((value: string) => string) =>
-  Str.slice(0, maximumLength);
-
-// Every read of a captured value may hit a hostile Proxy trap, so evaluation
-// is lifted into Option instead of being allowed to throw.
-const tryOption = <A>(evaluate: () => A): Option.Option<A> => Option.liftThrowable(evaluate)();
-
-const readString = (value: object, property: string): Option.Option<string> =>
-  tryOption(() => Reflect.get(value, property)).pipe(Option.filter(Predicate.isString));
-
-const isErrorValue = (value: unknown): value is object =>
-  tryOption(() => Predicate.isError(value)).pipe(Option.getOrElse(() => false));
-
-const encodeJson = (value: unknown): Option.Option<string> =>
-  tryOption(() => {
-    const seen = new WeakSet<object>();
-    return JSON.stringify(value, (_key: string, entry: unknown) =>
-      Match.value(entry).pipe(
-        Match.whenOr(Match.bigint, Match.symbol, (primitive) => globalThis.String(primitive)),
-        Match.when(Predicate.isObjectKeyword, (candidate) => {
-          if (seen.has(candidate)) return "[Circular]";
-          seen.add(candidate);
-          return candidate;
-        }),
-        Match.orElse(identity),
-      ),
-    );
-  }).pipe(Option.filter(Predicate.isString));
-
-const stringify = (value: unknown): string =>
-  Match.value(value).pipe(
-    Match.withReturnType<string>(),
-    Match.when(Match.string, (text) => text),
-    Match.whenOr(Match.symbol, Match.bigint, (primitive) => globalThis.String(primitive)),
-    Match.orElse((other) =>
-      encodeJson(other).pipe(
-        Option.orElse(() => tryOption(() => globalThis.String(other))),
-        Option.getOrElse(() => "[Unserializable value]"),
-      ),
-    ),
+const readString = (value: object, property: string): string | undefined =>
+  Option.liftThrowable(() => Reflect.get(value, property))().pipe(
+    Option.filter(Predicate.isString),
+    Option.getOrUndefined,
   );
 
-const errorEvent = (error: object, timestamp: DateTime.Utc): EventRequest =>
-  new EventRequest({
-    name: pipe(
-      readString(error, "name"),
-      Option.filter(Str.isNonEmpty),
-      Option.getOrElse(() => "Error"),
-      truncate(200),
-    ),
-    message: pipe(
-      readString(error, "message"),
-      Option.getOrElse(() => ""),
-      truncate(10_000),
-    ),
-    ...Option.match(readString(error, "stack"), {
-      onNone: () => ({}),
-      onSome: (stack) => ({ stackTrace: truncate(70_000)(stack) }),
+const stringify = (value: unknown): string => {
+  if (typeof value === "string") return value;
+  if (typeof value === "bigint" || typeof value === "symbol") {
+    return globalThis.String(value);
+  }
+
+  const seen = new WeakSet<object>();
+  return Option.liftThrowable(() =>
+    JSON.stringify(value, (_key: string, entry: unknown) => {
+      if (typeof entry === "bigint" || typeof entry === "symbol") {
+        return globalThis.String(entry);
+      }
+
+      if ((typeof entry === "object" && entry !== null) || typeof entry === "function") {
+        if (seen.has(entry)) return "[Circular]";
+        seen.add(entry);
+      }
+
+      return entry;
     }),
-    timestamp: DateTime.formatIso(timestamp),
-  });
+  )().pipe(
+    Option.filter(Predicate.isString),
+    Option.orElse(() => Option.liftThrowable(() => globalThis.String(value))()),
+    Option.getOrElse(() => "[Unserializable value]"),
+  );
+};
 
-const nonErrorEvent = (value: unknown, timestamp: DateTime.Utc): EventRequest =>
-  new EventRequest({
-    name: "NonError",
-    message: truncate(10_000)(stringify(value)),
-    timestamp: DateTime.formatIso(timestamp),
-  });
+export const normalizeException = (value: unknown, timestamp: DateTime.Utc): EventRequest => {
+  const formattedTimestamp = DateTime.formatIso(timestamp);
+  const error = Option.liftThrowable(() => (Predicate.isError(value) ? value : undefined))().pipe(
+    Option.getOrUndefined,
+  );
 
-export const normalizeException = (value: unknown, timestamp: DateTime.Utc): EventRequest =>
-  isErrorValue(value) ? errorEvent(value, timestamp) : nonErrorEvent(value, timestamp);
+  if (error === undefined) {
+    return new EventRequest({
+      name: "NonError",
+      message: stringify(value).slice(0, 10_000),
+      timestamp: formattedTimestamp,
+    });
+  }
+
+  const name = readString(error, "name");
+  const stack = readString(error, "stack");
+
+  return new EventRequest({
+    name: (name === undefined || name.length === 0 ? "Error" : name).slice(0, 200),
+    message: (readString(error, "message") ?? "").slice(0, 10_000),
+    ...(stack === undefined ? {} : { stackTrace: stack.slice(0, 70_000) }),
+    timestamp: formattedTimestamp,
+  });
+};
