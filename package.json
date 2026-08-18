@@ -59,7 +59,7 @@
     "check": "bun run lint:check && bun run format:check && bun run typecheck && bun run test && bun run build && bun publint"
   },
   "devDependencies": {
-    "@effect/tsgo": "0.36.4",
+    "@effect/tsgo": "0.36.5",
     "@effect/vitest": "4.0.0-beta.103",
     "@types/node": "26.2.0",
     "effect": "4.0.0-beta.103",
