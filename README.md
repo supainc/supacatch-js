@@ -1,6 +1,6 @@
 # `@supainc/supacatch-js`
 
-Official SupaCatch SDK for server-side JavaScript. The first release supports Node.js, Bun, and Deno with one runtime-neutral capture implementation.
+Official SupaCatch SDK for server-side JavaScript. The first release supports Node.js, Bun, Deno, and Cloudflare Workers with one runtime-neutral capture implementation.
 
 > Do not bundle this package into browser code. A SupaCatch Ingest Key is a secret. Browser support requires a separate authentication model and will use `@supainc/supacatch-browser`.
 
@@ -56,6 +56,26 @@ if (!ingestKey) throw new Error("SUPACATCH_INGEST_KEY is required");
 
 const supaCatch = init({ ingestKey });
 ```
+
+### Cloudflare Workers
+
+Wrap the Worker's exported handler. Configuration is resolved lazily from the Worker's environment when the first exception is captured.
+
+```ts
+import * as SupaCatch from "@supainc/supacatch-js/cloudflare";
+
+interface Env {
+  SUPACATCH_INGEST_KEY: string;
+}
+
+export default SupaCatch.withCatch((env: Env) => ({ ingestKey: env.SUPACATCH_INGEST_KEY }), {
+  async fetch(request) {
+    return new Response(`Requested ${new URL(request.url).pathname}`);
+  },
+});
+```
+
+When the handler throws or rejects, the wrapper attempts delivery for at most two seconds and then rethrows the original value. Capture failures never replace the Worker exception. The wrapper catches only failures that propagate through the `fetch` handler; module initialization failures, detached tasks, and platform terminations require a Tail Worker.
 
 The SDK sends Events to `https://ingest.catch.supa.dev` by default. You can override it when needed:
 
@@ -141,4 +161,5 @@ A successful capture means the ingest endpoint accepted the Event into its queue
 - Node.js 20.19 or newer maintained releases
 - Bun 1.3 or newer
 - Deno 2.x
+- Cloudflare Workers
 - ESM only

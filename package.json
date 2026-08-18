@@ -1,7 +1,7 @@
 {
   "name": "@supainc/supacatch-js",
   "version": "0.1.0-alpha.1",
-  "description": "Official SupaCatch JavaScript SDK for Node.js, Bun, and Deno",
+  "description": "Official SupaCatch JavaScript SDK for Node.js, Bun, Deno, and Cloudflare Workers",
   "keywords": [
     "error-monitoring",
     "supacatch"
@@ -40,6 +40,10 @@
     "./deno": {
       "types": "./dist/deno.d.ts",
       "import": "./dist/deno.js"
+    },
+    "./cloudflare": {
+      "types": "./dist/cloudflare.d.ts",
+      "import": "./dist/cloudflare.js"
     },
     "./package.json": "./package.json"
   },
