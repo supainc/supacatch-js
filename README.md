@@ -119,7 +119,20 @@ export default createServerEntry(
 );
 ```
 
-For Cloudflare Workers, compose `SupaCatch.withCatch` from the Cloudflare entry point around `withSupaCatch`. Each request resolves its environment configuration lazily and supplies a request-scoped client to the TanStack middlewares.
+On Cloudflare Workers, pass the environment configuration function as the first argument to `withSupaCatch`. Each request resolves that configuration lazily and supplies a request-scoped client to the TanStack middlewares.
+
+```ts
+// src/server.ts
+import { withSupaCatch } from "@supainc/supacatch-js/tanstack-start";
+import handler from "@tanstack/react-start/server-entry";
+import type { Env } from "./worker";
+
+export default withSupaCatch((env: Env) => ({ ingestKey: env.SUPACATCH_INGEST_KEY }), {
+  fetch(request: Request) {
+    return handler.fetch(request);
+  },
+});
+```
 
 The adapter waits for each Event submission before rethrowing the original failure. The client's `requestTimeout` therefore bounds the added failure-path latency. Capture failures never replace application failures, and the same `Error` passing through nested adapter layers is submitted once.
 
@@ -134,7 +147,7 @@ const supaCatch = SupaCatch.init({
 });
 ```
 
-For Cloudflare Workers, return the same `endpoint` option from the configuration function passed to `SupaCatch.withCatch`.
+For Cloudflare Workers, return the same `endpoint` option from the configuration function passed to `withSupaCatch` or `SupaCatch.withCatch`.
 
 Fatal capture waits for delivery for at most two seconds and then preserves fatal termination. Call `SupaCatch.init` inside every worker or isolate that should capture failures.
 

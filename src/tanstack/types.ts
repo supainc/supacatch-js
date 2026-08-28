@@ -46,6 +46,6 @@ export type SupaCatchFunctionMiddleware = {
 };
 
 export type TanStackServerEntry = {
-  // `never` accepts deployment-specific fetch parameter lists while preserving inference on Entry.
-  readonly fetch: (...arguments_: ReadonlyArray<never>) => Response | Promise<Response>;
+  // Workers and Node disagree on fetch arity; `any` matches the middleware adapter pattern above.
+  readonly fetch: (...arguments_: Array<any>) => Response | Promise<Response>;
 };

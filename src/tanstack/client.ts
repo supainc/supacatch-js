@@ -1,3 +1,4 @@
+import type { SdkConfig } from "../config.js";
 import type {
   SupaCatchFunctionMiddleware,
   SupaCatchRequestMiddleware,
@@ -19,8 +20,16 @@ export const supaCatchGlobalFunctionMiddleware: SupaCatchFunctionMiddleware = {
 };
 
 /** Browser no-op for the server entry wrapper. */
-export const withSupaCatch = <Entry extends TanStackServerEntry>(serverEntry: Entry): Entry =>
-  serverEntry;
+export function withSupaCatch<Entry extends TanStackServerEntry>(serverEntry: Entry): Entry;
+export function withSupaCatch<Env, Entry extends TanStackServerEntry>(
+  config: (env: Env) => SdkConfig,
+  serverEntry: Entry,
+): Entry;
+export function withSupaCatch<Env, Entry extends TanStackServerEntry>(
+  ...args: [Entry] | [(env: Env) => SdkConfig, Entry]
+): Entry {
+  return args.length === 1 ? args[0] : args[1];
+}
 
 export type {
   SupaCatchFunctionMiddleware,

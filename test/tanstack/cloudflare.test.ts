@@ -1,6 +1,5 @@
 import { assert, describe, it } from "@effect/vitest";
 import type { CloudflareExecutionContext } from "../../src/cloudflare.js";
-import * as SupaCatch from "../../src/cloudflare.js";
 import { withSupaCatch } from "../../src/tanstack/server.js";
 import { accepted, listen } from "../server.js";
 
@@ -16,15 +15,12 @@ const context: CloudflareExecutionContext = {
 };
 
 const makeWorker = (error: Error) =>
-  SupaCatch.withCatch(
-    (env: Env) => ({ endpoint: env.endpoint, ingestKey: env.ingestKey }),
-    withSupaCatch({
-      async fetch(_request: Request, env: Env) {
-        if (env.fail) throw error;
-        return new Response("ok");
-      },
-    }),
-  );
+  withSupaCatch((env: Env) => ({ endpoint: env.endpoint, ingestKey: env.ingestKey }), {
+    async fetch(_request: Request, env: Env) {
+      if (env.fail) throw error;
+      return new Response("ok");
+    },
+  });
 
 describe("TanStack Start on Cloudflare", () => {
   it("uses the failing request environment after an earlier request succeeds", async () => {
