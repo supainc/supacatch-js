@@ -1,4 +1,6 @@
 import { Effect } from "effect";
+import { withCatch, type CloudflareWorker } from "../cloudflare.js";
+import type { SdkConfig } from "../config.js";
 import { captureAutomatic } from "../internal/automatic.js";
 import type {
   SupaCatchFunctionMiddleware,
@@ -36,8 +38,7 @@ export const supaCatchGlobalFunctionMiddleware: SupaCatchFunctionMiddleware = {
   options: { server: captureMiddlewareException },
 };
 
-/** Captures failures escaping a TanStack Start server entry and preserves its other properties. */
-export const withSupaCatch = <Entry extends TanStackServerEntry>(serverEntry: Entry): Entry => ({
+const wrapServerEntry = <Entry extends TanStackServerEntry>(serverEntry: Entry): Entry => ({
   ...serverEntry,
   fetch: new Proxy(serverEntry.fetch, {
     apply: async (target, thisArgument, argumentsList) => {
@@ -50,6 +51,22 @@ export const withSupaCatch = <Entry extends TanStackServerEntry>(serverEntry: En
     },
   }),
 });
+
+/** Captures failures escaping a TanStack Start server entry. Pass a config function for Cloudflare Workers. */
+export function withSupaCatch<Entry extends TanStackServerEntry>(serverEntry: Entry): Entry;
+export function withSupaCatch<Env, Entry extends TanStackServerEntry>(
+  config: (env: Env) => SdkConfig,
+  serverEntry: Entry,
+): Omit<Entry, "fetch"> & CloudflareWorker<Env>;
+export function withSupaCatch<Env, Entry extends TanStackServerEntry>(
+  ...args: [Entry] | [(env: Env) => SdkConfig, Entry]
+): Entry | (Omit<Entry, "fetch"> & CloudflareWorker<Env>) {
+  if (args.length === 1) {
+    return wrapServerEntry(args[0]);
+  }
+  const [config, serverEntry] = args;
+  return withCatch(config, wrapServerEntry(serverEntry));
+}
 
 export type {
   SupaCatchFunctionMiddleware,

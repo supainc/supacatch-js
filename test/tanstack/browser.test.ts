@@ -15,4 +15,12 @@ describe("TanStack Start browser exports", () => {
     const serverEntry = { fetch: () => new Response("ok") };
     assert.strictEqual(withSupaCatch(serverEntry), serverEntry);
   });
+
+  it("ignores a Cloudflare config argument and returns the entry", () => {
+    const serverEntry = { fetch: () => new Response("ok") };
+    assert.strictEqual(
+      withSupaCatch((_env: { ingestKey: string }) => ({ ingestKey: "sck_unused" }), serverEntry),
+      serverEntry,
+    );
+  });
 });
