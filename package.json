@@ -63,7 +63,7 @@
     "provenance": true
   },
   "scripts": {
-    "prepare": "effect-tsgo patch && lefthook install && ./scripts/prepare-effect.sh",
+    "prepare": "effect-tsgo patch && lefthook install",
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "test": "bun run build && vitest run",
