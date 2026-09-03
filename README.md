@@ -7,17 +7,17 @@ Official SupaCatch SDK for server-side JavaScript. The first release supports No
 ## Install
 
 ```sh
-npm install @supainc/supacatch-js@alpha
+npm install @supainc/supacatch-js
 ```
 
 ```sh
-bun add @supainc/supacatch-js@alpha
+bun add @supainc/supacatch-js
 ```
 
 Deno resolves the package through npm:
 
 ```ts
-import * as SupaCatch from "npm:@supainc/supacatch-js@alpha/deno";
+import * as SupaCatch from "npm:@supainc/supacatch-js/deno";
 ```
 
 ## Automatic capture
@@ -49,7 +49,7 @@ const supaCatch = SupaCatch.init({ ingestKey });
 ### Deno
 
 ```ts
-import * as SupaCatch from "npm:@supainc/supacatch-js@alpha/deno";
+import * as SupaCatch from "npm:@supainc/supacatch-js/deno";
 
 const ingestKey = Deno.env.get("SUPACATCH_INGEST_KEY");
 if (!ingestKey) throw new Error("SUPACATCH_INGEST_KEY is required");
