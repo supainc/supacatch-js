@@ -1,0 +1,5 @@
+ts	phase	decision	why	evidence	result
+2026-09-04T02:11:00Z	frame	fast-forwarded main and captured the single-package baseline	started from current code and required the existing checks to stay green	baseline bun run check	11 test files and 44 tests passed
+2026-09-04T02:15:00Z	packages	split the SDK into six product-scoped packages	matched the approved Sentry-style ownership without adding Nx or compatibility packages	packages/*/package.json	build passed for all six packages
+2026-09-04T02:16:00Z	tests	ran conditional export tests from the package directory	Node resolves self references from the package scope, not the private workspace root	packages/tanstack-start/test/exports.test.ts	11 test files and 44 tests passed
+2026-09-04T02:17:00Z	publish	used exact lockstep versions for package dependencies	npm publish cannot safely ship workspace protocol dependency ranges	packages/*/package.json	publish manifests contain 0.1.0-alpha.5 dependencies

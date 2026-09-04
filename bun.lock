@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "@supainc/supacatch-js",
+      "name": "supacatch-js",
       "devDependencies": {
         "@effect/tsgo": "0.36.5",
         "@effect/vitest": "4.0.0-beta.103",
@@ -15,6 +15,64 @@
         "publint": "0.3.23",
         "typescript": "7.0.2",
         "vitest": "4.1.10",
+      },
+    },
+    "packages/bun": {
+      "name": "@supainc/supacatch-bun",
+      "version": "0.1.0-alpha.5",
+      "dependencies": {
+        "@supainc/supacatch-node": "workspace:*",
+      },
+      "peerDependencies": {
+        "effect": "4.0.0-beta.103",
+      },
+    },
+    "packages/cloudflare": {
+      "name": "@supainc/supacatch-cloudflare",
+      "version": "0.1.0-alpha.5",
+      "dependencies": {
+        "@supainc/supacatch": "workspace:*",
+      },
+      "peerDependencies": {
+        "effect": "4.0.0-beta.103",
+      },
+    },
+    "packages/core": {
+      "name": "@supainc/supacatch",
+      "version": "0.1.0-alpha.5",
+      "peerDependencies": {
+        "effect": "4.0.0-beta.103",
+      },
+    },
+    "packages/deno": {
+      "name": "@supainc/supacatch-deno",
+      "version": "0.1.0-alpha.5",
+      "dependencies": {
+        "@supainc/supacatch": "workspace:*",
+      },
+      "peerDependencies": {
+        "effect": "4.0.0-beta.103",
+      },
+    },
+    "packages/node": {
+      "name": "@supainc/supacatch-node",
+      "version": "0.1.0-alpha.5",
+      "dependencies": {
+        "@supainc/supacatch": "workspace:*",
+      },
+      "peerDependencies": {
+        "effect": "4.0.0-beta.103",
+      },
+    },
+    "packages/tanstack-start": {
+      "name": "@supainc/supacatch-tanstack-start",
+      "version": "0.1.0-alpha.5",
+      "dependencies": {
+        "@supainc/supacatch": "workspace:*",
+        "@supainc/supacatch-cloudflare": "workspace:*",
+      },
+      "devDependencies": {
+        "@supainc/supacatch-node": "workspace:*",
       },
       "peerDependencies": {
         "effect": "4.0.0-beta.103",
@@ -165,6 +223,18 @@
     "@rolldown/pluginutils": ["@rolldown/pluginutils@1.0.1", "", {}, "sha512-2j9bGt5Jh8hj+vPtgzPtl72j0yRxHAyumoo6TNfAjsLB04UtpSvPbPcDcBMxz7n+9CYB0c1GxQFxYRg2jimqGw=="],
 
     "@standard-schema/spec": ["@standard-schema/spec@1.1.0", "", {}, "sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w=="],
+
+    "@supainc/supacatch": ["@supainc/supacatch@workspace:packages/core"],
+
+    "@supainc/supacatch-bun": ["@supainc/supacatch-bun@workspace:packages/bun"],
+
+    "@supainc/supacatch-cloudflare": ["@supainc/supacatch-cloudflare@workspace:packages/cloudflare"],
+
+    "@supainc/supacatch-deno": ["@supainc/supacatch-deno@workspace:packages/deno"],
+
+    "@supainc/supacatch-node": ["@supainc/supacatch-node@workspace:packages/node"],
+
+    "@supainc/supacatch-tanstack-start": ["@supainc/supacatch-tanstack-start@workspace:packages/tanstack-start"],
 
     "@types/chai": ["@types/chai@5.2.3", "", { "dependencies": { "@types/deep-eql": "*", "assertion-error": "^2.0.1" } }, "sha512-Mw558oeA9fFbv65/y4mHtXDs9bPnFMZAL/jxdPFUpOHHIXX91mcgEHbS5Lahr+pwZFR8A7GQleRWeI6cGFC2UA=="],
 
