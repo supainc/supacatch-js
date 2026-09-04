@@ -8,7 +8,7 @@ const resolveMiddleware = (conditions: ReadonlyArray<string>): string =>
       "--input-type=module",
       ...conditions.flatMap((condition) => [`--conditions=${condition}`]),
       "--eval",
-      'const { supaCatchGlobalRequestMiddleware: middleware } = await import("@supainc/supacatch-js/tanstack-start"); process.stdout.write(typeof middleware.options.server)',
+      'const { supaCatchGlobalRequestMiddleware: middleware } = await import("@supainc/supacatch-core/tanstack-start"); process.stdout.write(typeof middleware.options.server)',
     ],
     { encoding: "utf8" },
   );

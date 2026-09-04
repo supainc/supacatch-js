@@ -1,5 +1,5 @@
 {
-  "name": "@supainc/supacatch-js",
+  "name": "@supainc/supacatch-core",
   "version": "0.1.0-alpha.5",
   "description": "Official SupaCatch JavaScript SDK for Node.js, Bun, Deno, and Cloudflare Workers",
   "keywords": [

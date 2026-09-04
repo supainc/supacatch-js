@@ -11,7 +11,7 @@ export class SupaCatch extends Context.Service<
   {
     readonly captureException: (value: unknown) => Effect.Effect<EventId, CaptureError>;
   }
->()("@supainc/supacatch-js/SupaCatch") {}
+>()("@supainc/supacatch-core/SupaCatch") {}
 
 export const layer = (
   config: SdkConfig,

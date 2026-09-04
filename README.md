@@ -1,4 +1,4 @@
-# `@supainc/supacatch-js`
+# `@supainc/supacatch-core`
 
 Official SupaCatch SDK for server-side JavaScript. The first release supports Node.js, Bun, Deno, and Cloudflare Workers with one runtime-neutral capture implementation.
 
@@ -7,17 +7,17 @@ Official SupaCatch SDK for server-side JavaScript. The first release supports No
 ## Install
 
 ```sh
-npm install @supainc/supacatch-js@alpha
+npm install @supainc/supacatch-core@alpha
 ```
 
 ```sh
-bun add @supainc/supacatch-js@alpha
+bun add @supainc/supacatch-core@alpha
 ```
 
 Deno resolves the package through npm:
 
 ```ts
-import * as SupaCatch from "npm:@supainc/supacatch-js@alpha/deno";
+import * as SupaCatch from "npm:@supainc/supacatch-core@alpha/deno";
 ```
 
 ## Automatic capture
@@ -27,7 +27,7 @@ Use the entry point for your runtime. Initialization automatically captures unca
 ### Node.js
 
 ```ts
-import * as SupaCatch from "@supainc/supacatch-js/node";
+import * as SupaCatch from "@supainc/supacatch-core/node";
 
 const ingestKey = process.env.SUPACATCH_INGEST_KEY;
 if (!ingestKey) throw new Error("SUPACATCH_INGEST_KEY is required");
@@ -38,7 +38,7 @@ const supaCatch = SupaCatch.init({ ingestKey });
 ### Bun
 
 ```ts
-import * as SupaCatch from "@supainc/supacatch-js/bun";
+import * as SupaCatch from "@supainc/supacatch-core/bun";
 
 const ingestKey = Bun.env.SUPACATCH_INGEST_KEY;
 if (!ingestKey) throw new Error("SUPACATCH_INGEST_KEY is required");
@@ -49,7 +49,7 @@ const supaCatch = SupaCatch.init({ ingestKey });
 ### Deno
 
 ```ts
-import * as SupaCatch from "npm:@supainc/supacatch-js@alpha/deno";
+import * as SupaCatch from "npm:@supainc/supacatch-core@alpha/deno";
 
 const ingestKey = Deno.env.get("SUPACATCH_INGEST_KEY");
 if (!ingestKey) throw new Error("SUPACATCH_INGEST_KEY is required");
@@ -62,7 +62,7 @@ const supaCatch = SupaCatch.init({ ingestKey });
 Wrap the Worker's exported handler. Configuration is resolved lazily from the Worker's environment when the first exception is captured.
 
 ```ts
-import * as SupaCatch from "@supainc/supacatch-js/cloudflare";
+import * as SupaCatch from "@supainc/supacatch-core/cloudflare";
 
 interface Env {
   SUPACATCH_INGEST_KEY: string;
@@ -88,7 +88,7 @@ Add the two global middlewares first in their arrays. Import them directly from 
 import {
   supaCatchGlobalFunctionMiddleware,
   supaCatchGlobalRequestMiddleware,
-} from "@supainc/supacatch-js/tanstack-start";
+} from "@supainc/supacatch-core/tanstack-start";
 import { createStart } from "@tanstack/react-start";
 
 export const startInstance = createStart(() => ({
@@ -101,8 +101,8 @@ Initialize the runtime in an explicit server entry and wrap its handler. Runtime
 
 ```ts
 // src/server.ts
-import * as SupaCatch from "@supainc/supacatch-js/node";
-import { withSupaCatch } from "@supainc/supacatch-js/tanstack-start";
+import * as SupaCatch from "@supainc/supacatch-core/node";
+import { withSupaCatch } from "@supainc/supacatch-core/tanstack-start";
 import handler, { createServerEntry } from "@tanstack/react-start/server-entry";
 
 const ingestKey = process.env.SUPACATCH_INGEST_KEY;
@@ -123,7 +123,7 @@ On Cloudflare Workers, pass the environment configuration function as the first 
 
 ```ts
 // src/server.ts
-import { withSupaCatch } from "@supainc/supacatch-js/tanstack-start";
+import { withSupaCatch } from "@supainc/supacatch-core/tanstack-start";
 import handler from "@tanstack/react-start/server-entry";
 import type { Env } from "./worker";
 
@@ -162,7 +162,7 @@ supaCatch.dispose();
 The shared entry point installs no global handlers:
 
 ```ts
-import { createClient } from "@supainc/supacatch-js";
+import { createClient } from "@supainc/supacatch-core";
 
 const ingestKey = process.env.SUPACATCH_INGEST_KEY;
 if (!ingestKey) throw new Error("SUPACATCH_INGEST_KEY is required");
@@ -182,7 +182,7 @@ const eventId = await supaCatch.captureException(new Error("Example failure"));
 ```ts
 import { Effect, Layer } from "effect";
 import { FetchHttpClient } from "effect/unstable/http";
-import { layer, SupaCatch } from "@supainc/supacatch-js/effect";
+import { layer, SupaCatch } from "@supainc/supacatch-core/effect";
 
 const ingestKey = process.env.SUPACATCH_INGEST_KEY;
 if (!ingestKey) throw new Error("SUPACATCH_INGEST_KEY is required");
@@ -199,8 +199,8 @@ Use the runtime Layer when an Effect application also wants automatic capture:
 
 ```ts
 import { Effect } from "effect";
-import { SupaCatch } from "@supainc/supacatch-js/effect";
-import { layer } from "@supainc/supacatch-js/node";
+import { SupaCatch } from "@supainc/supacatch-core/effect";
+import { layer } from "@supainc/supacatch-core/node";
 
 const program = Effect.gen(function* () {
   const supaCatch = yield* SupaCatch;
