@@ -1,23 +1,29 @@
-# `@supainc/supacatch-core`
+# SupaCatch JavaScript SDKs
 
-Official SupaCatch SDK for server-side JavaScript. The first release supports Node.js, Bun, Deno, and Cloudflare Workers with one runtime-neutral capture implementation.
+Official SupaCatch SDKs for server-side JavaScript. This repository uses a Bun workspace with separate core, runtime, and framework packages.
 
-> Do not bundle this package into browser code. A SupaCatch Ingest Key is a secret. Browser support requires a separate authentication model and will use `@supainc/supacatch-browser`.
+> Do not bundle a server package into browser code. A SupaCatch Ingest Key is a secret. Browser support requires a separate authentication model and will use `@supainc/supacatch-browser`.
+
+## Packages
+
+| Package                             | Purpose                                      |
+| ----------------------------------- | -------------------------------------------- |
+| `@supainc/supacatch-core`           | Shared client and Effect service             |
+| `@supainc/supacatch-node`           | Node.js automatic capture                    |
+| `@supainc/supacatch-bun`            | Bun automatic capture                        |
+| `@supainc/supacatch-cloudflare`     | Cloudflare Worker wrapper                    |
+| `@supainc/supacatch-tanstack-start` | TanStack Start middleware and server wrapper |
 
 ## Install
 
+Install the package for your runtime:
+
 ```sh
-npm install @supainc/supacatch-core@alpha
+npm install @supainc/supacatch-node@alpha
 ```
 
 ```sh
-bun add @supainc/supacatch-core@alpha
-```
-
-Deno resolves the package through npm:
-
-```ts
-import * as SupaCatch from "npm:@supainc/supacatch-core@alpha/deno";
+bun add @supainc/supacatch-bun@alpha
 ```
 
 ## Automatic capture
@@ -27,7 +33,7 @@ Use the entry point for your runtime. Initialization automatically captures unca
 ### Node.js
 
 ```ts
-import * as SupaCatch from "@supainc/supacatch-core/node";
+import * as SupaCatch from "@supainc/supacatch-node";
 
 const ingestKey = process.env.SUPACATCH_INGEST_KEY;
 if (!ingestKey) throw new Error("SUPACATCH_INGEST_KEY is required");
@@ -38,20 +44,9 @@ const supaCatch = SupaCatch.init({ ingestKey });
 ### Bun
 
 ```ts
-import * as SupaCatch from "@supainc/supacatch-core/bun";
+import * as SupaCatch from "@supainc/supacatch-bun";
 
 const ingestKey = Bun.env.SUPACATCH_INGEST_KEY;
-if (!ingestKey) throw new Error("SUPACATCH_INGEST_KEY is required");
-
-const supaCatch = SupaCatch.init({ ingestKey });
-```
-
-### Deno
-
-```ts
-import * as SupaCatch from "npm:@supainc/supacatch-core@alpha/deno";
-
-const ingestKey = Deno.env.get("SUPACATCH_INGEST_KEY");
 if (!ingestKey) throw new Error("SUPACATCH_INGEST_KEY is required");
 
 const supaCatch = SupaCatch.init({ ingestKey });
@@ -62,7 +57,7 @@ const supaCatch = SupaCatch.init({ ingestKey });
 Wrap the Worker's exported handler. Configuration is resolved lazily from the Worker's environment when the first exception is captured.
 
 ```ts
-import * as SupaCatch from "@supainc/supacatch-core/cloudflare";
+import * as SupaCatch from "@supainc/supacatch-cloudflare";
 
 interface Env {
   SUPACATCH_INGEST_KEY: string;
@@ -88,7 +83,7 @@ Add the two global middlewares first in their arrays. Import them directly from 
 import {
   supaCatchGlobalFunctionMiddleware,
   supaCatchGlobalRequestMiddleware,
-} from "@supainc/supacatch-core/tanstack-start";
+} from "@supainc/supacatch-tanstack-start";
 import { createStart } from "@tanstack/react-start";
 
 export const startInstance = createStart(() => ({
@@ -101,8 +96,8 @@ Initialize the runtime in an explicit server entry and wrap its handler. Runtime
 
 ```ts
 // src/server.ts
-import * as SupaCatch from "@supainc/supacatch-core/node";
-import { withSupaCatch } from "@supainc/supacatch-core/tanstack-start";
+import * as SupaCatch from "@supainc/supacatch-node";
+import { withSupaCatch } from "@supainc/supacatch-tanstack-start";
 import handler, { createServerEntry } from "@tanstack/react-start/server-entry";
 
 const ingestKey = process.env.SUPACATCH_INGEST_KEY;
@@ -123,7 +118,7 @@ On Cloudflare Workers, pass the environment configuration function as the first 
 
 ```ts
 // src/server.ts
-import { withSupaCatch } from "@supainc/supacatch-core/tanstack-start";
+import { withSupaCatch } from "@supainc/supacatch-tanstack-start";
 import handler from "@tanstack/react-start/server-entry";
 import type { Env } from "./worker";
 
@@ -138,7 +133,7 @@ The adapter waits for each Event submission before rethrowing the original failu
 
 Exceptions consumed by an application error boundary or converted into an SSR error response before reaching these seams require manual `captureException` calls.
 
-The SDK sends Events to `https://ingest.catch.supa.dev` by default. For Node.js, Bun, and Deno, you can override it when needed:
+The SDK sends Events to `https://ingest.catch.supa.dev` by default. For Node.js and Bun, you can override it when needed:
 
 ```ts
 const supaCatch = SupaCatch.init({
@@ -200,7 +195,7 @@ Use the runtime Layer when an Effect application also wants automatic capture:
 ```ts
 import { Effect } from "effect";
 import { SupaCatch } from "@supainc/supacatch-core/effect";
-import { layer } from "@supainc/supacatch-core/node";
+import { layer } from "@supainc/supacatch-node";
 
 const program = Effect.gen(function* () {
   const supaCatch = yield* SupaCatch;
@@ -213,6 +208,12 @@ await Effect.runPromise(program);
 
 The runtime Layer removes its global handlers and TanStack automatic capture registration when its scope closes.
 
+## Runtime adapters
+
+`@supainc/supacatch-core/adapter` is the supported contract for packages that add a SupaCatch runtime integration. Application code should use the runtime packages above instead.
+
+The adapter entry exports runtime initialization, automatic capture registration, capture context, deduplication, and fatal handling. Other files under `@supainc/supacatch-core` are private unless the package export map lists them.
+
 ## Privacy and delivery semantics
 
 SupaCatch sends exception names, messages, raw stack strings, and capture timestamps. This release has no redaction hook or source-map processing. Never place an Ingest Key in logs, client-side bundles, or public configuration.
@@ -223,6 +224,5 @@ A successful capture means the ingest endpoint accepted the Event into its queue
 
 - Node.js 20.19 or newer maintained releases
 - Bun 1.3 or newer
-- Deno 2.x
 - Cloudflare Workers
 - ESM only

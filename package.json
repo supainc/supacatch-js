@@ -1,81 +1,31 @@
 {
-  "name": "@supainc/supacatch-core",
-  "version": "0.1.0-alpha.5",
-  "description": "Official SupaCatch JavaScript SDK for Node.js, Bun, Deno, and Cloudflare Workers",
-  "keywords": [
-    "error-monitoring",
-    "supacatch",
-    "tanstack-start"
-  ],
-  "homepage": "https://github.com/supainc/supacatch-js#readme",
-  "bugs": "https://github.com/supainc/supacatch-js/issues",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/supainc/supacatch-js.git"
-  },
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
+  "name": "supacatch-js",
+  "private": true,
+  "workspaces": [
+    "packages/*"
   ],
   "type": "module",
-  "sideEffects": false,
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    },
-    "./effect": {
-      "types": "./dist/effect.d.ts",
-      "import": "./dist/effect.js"
-    },
-    "./node": {
-      "types": "./dist/node.d.ts",
-      "import": "./dist/node.js"
-    },
-    "./bun": {
-      "types": "./dist/bun.d.ts",
-      "import": "./dist/bun.js"
-    },
-    "./deno": {
-      "types": "./dist/deno.d.ts",
-      "import": "./dist/deno.js"
-    },
-    "./cloudflare": {
-      "types": "./dist/cloudflare.d.ts",
-      "import": "./dist/cloudflare.js"
-    },
-    "./tanstack-start": {
-      "types": "./dist/tanstack/server.d.ts",
-      "workerd": "./dist/tanstack/server.js",
-      "worker": "./dist/tanstack/server.js",
-      "browser": "./dist/tanstack/client.js",
-      "node": "./dist/tanstack/server.js",
-      "bun": "./dist/tanstack/server.js",
-      "deno": "./dist/tanstack/server.js",
-      "import": "./dist/tanstack/server.js"
-    },
-    "./package.json": "./package.json"
-  },
-  "publishConfig": {
-    "access": "public",
-    "provenance": true
-  },
   "scripts": {
     "prepare": "effect-tsgo patch && lefthook install",
-    "build": "tsc -p tsconfig.build.json",
-    "typecheck": "tsc --noEmit",
+    "build": "tsc -b packages/*/tsconfig.build.json",
+    "typecheck": "bun run build && tsc --noEmit",
     "test": "bun run build && vitest run",
     "lint": "oxlint --fix",
     "lint:check": "oxlint",
     "format": "oxfmt .",
     "format:check": "oxfmt --check .",
-    "check": "bun run lint:check && bun run format:check && bun run typecheck && bun run test && bun run build && bun publint"
+    "publint": "bun run --filter '*' publint",
+    "check:versions": "bun scripts/check-package-versions.ts",
+    "check": "bun run lint:check && bun run format:check && bun run check:versions && bun run build && tsc --noEmit && vitest run && bun run publint"
   },
   "devDependencies": {
     "@effect/tsgo": "0.36.5",
     "@effect/vitest": "4.0.0-beta.103",
+    "@supainc/supacatch-bun": "workspace:*",
+    "@supainc/supacatch-cloudflare": "workspace:*",
+    "@supainc/supacatch-core": "workspace:*",
+    "@supainc/supacatch-node": "workspace:*",
+    "@supainc/supacatch-tanstack-start": "workspace:*",
     "@types/node": "26.2.0",
     "effect": "4.0.0-beta.103",
     "lefthook": "2.1.10",
@@ -84,9 +34,6 @@
     "publint": "0.3.23",
     "typescript": "7.0.2",
     "vitest": "4.1.10"
-  },
-  "peerDependencies": {
-    "effect": "4.0.0-beta.103"
   },
   "engines": {
     "node": ">=20.19.0"
