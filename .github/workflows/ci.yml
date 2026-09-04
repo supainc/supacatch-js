@@ -51,5 +51,18 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun run build
       - run: bun run test
-      - run: deno check packages/deno/dist/index.js
+      - name: Check package entry points
+        run: |
+          for entry in \
+            packages/core/dist/index.js \
+            packages/core/dist/effect.js \
+            packages/node/dist/index.js \
+            packages/bun/dist/index.js \
+            packages/deno/dist/index.js \
+            packages/cloudflare/dist/index.js \
+            packages/tanstack-start/dist/server.js \
+            packages/tanstack-start/dist/client.js
+          do
+            deno check "$entry"
+          done
       - run: deno eval 'await import("./packages/deno/dist/index.js")'
