@@ -16,14 +16,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-          registry-url: https://registry.npmjs.org
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.3.14
+      - run: npm install -g npm@latest
       - run: bun install --frozen-lockfile
       - run: bun run check
       - name: Publish packages
         run: |
+          unset NODE_AUTH_TOKEN NPM_TOKEN
           for package in \
             packages/core \
             packages/node \
@@ -35,7 +36,16 @@ jobs:
             version=$(node -p "require('./$package/package.json').version")
             if npm view "$name@$version" version >/dev/null 2>&1; then
               echo "$name@$version is already published"
-            else
-              npm publish "./$package" --provenance --access public --tag alpha
+              continue
             fi
+            if ! npm view "$name" name >/dev/null 2>&1; then
+              echo "$name has never been published."
+              echo "OIDC trusted publishing cannot create a new package name."
+              echo "Granular tokens that bypass 2FA also cannot create packages."
+              echo "Publish the first version locally with account 2FA, then attach a trusted publisher:"
+              echo "  npm publish ./$package --access public --tag alpha"
+              echo "  npm trust github $name --repository supainc/supacatch-js --file release.yml --environment npm --allow-publish"
+              exit 1
+            fi
+            npm publish "./$package" --provenance --access public --tag alpha
           done
