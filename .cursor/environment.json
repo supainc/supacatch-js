@@ -1,5 +1,5 @@
 {
-  "name": "@supainc/supacatch-js",
+  "name": "@supainc/supacatch-core",
   "user": "ubuntu",
   "install": "bash .cursor/install.sh"
 }

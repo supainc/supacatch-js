@@ -1,4 +1,4 @@
-import { registerAutomatic } from "@supainc/supacatch/adapter";
+import { registerAutomatic } from "@supainc/supacatch-core/adapter";
 import {
   supaCatchGlobalFunctionMiddleware,
   supaCatchGlobalRequestMiddleware,

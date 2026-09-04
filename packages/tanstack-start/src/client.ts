@@ -1,4 +1,4 @@
-import type { SdkConfig } from "@supainc/supacatch";
+import type { SdkConfig } from "@supainc/supacatch-core";
 import type {
   SupaCatchFunctionMiddleware,
   SupaCatchRequestMiddleware,

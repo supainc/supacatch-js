@@ -21,9 +21,9 @@
   "devDependencies": {
     "@effect/tsgo": "0.36.5",
     "@effect/vitest": "4.0.0-beta.103",
-    "@supainc/supacatch": "workspace:*",
     "@supainc/supacatch-bun": "workspace:*",
     "@supainc/supacatch-cloudflare": "workspace:*",
+    "@supainc/supacatch-core": "workspace:*",
     "@supainc/supacatch-node": "workspace:*",
     "@supainc/supacatch-tanstack-start": "workspace:*",
     "@types/node": "26.2.0",

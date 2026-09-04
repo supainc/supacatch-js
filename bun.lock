@@ -7,9 +7,9 @@
       "devDependencies": {
         "@effect/tsgo": "0.36.5",
         "@effect/vitest": "4.0.0-beta.103",
-        "@supainc/supacatch": "workspace:*",
         "@supainc/supacatch-bun": "workspace:*",
         "@supainc/supacatch-cloudflare": "workspace:*",
+        "@supainc/supacatch-core": "workspace:*",
         "@supainc/supacatch-node": "workspace:*",
         "@supainc/supacatch-tanstack-start": "workspace:*",
         "@types/node": "26.2.0",
@@ -36,14 +36,14 @@
       "name": "@supainc/supacatch-cloudflare",
       "version": "0.1.0-alpha.5",
       "dependencies": {
-        "@supainc/supacatch": "0.1.0-alpha.5",
+        "@supainc/supacatch-core": "0.1.0-alpha.5",
       },
       "peerDependencies": {
         "effect": "4.0.0-beta.103",
       },
     },
     "packages/core": {
-      "name": "@supainc/supacatch",
+      "name": "@supainc/supacatch-core",
       "version": "0.1.0-alpha.5",
       "peerDependencies": {
         "effect": "4.0.0-beta.103",
@@ -53,7 +53,7 @@
       "name": "@supainc/supacatch-node",
       "version": "0.1.0-alpha.5",
       "dependencies": {
-        "@supainc/supacatch": "0.1.0-alpha.5",
+        "@supainc/supacatch-core": "0.1.0-alpha.5",
       },
       "peerDependencies": {
         "effect": "4.0.0-beta.103",
@@ -63,8 +63,8 @@
       "name": "@supainc/supacatch-tanstack-start",
       "version": "0.1.0-alpha.5",
       "dependencies": {
-        "@supainc/supacatch": "0.1.0-alpha.5",
         "@supainc/supacatch-cloudflare": "0.1.0-alpha.5",
+        "@supainc/supacatch-core": "0.1.0-alpha.5",
       },
       "peerDependencies": {
         "effect": "4.0.0-beta.103",
@@ -216,11 +216,11 @@
 
     "@standard-schema/spec": ["@standard-schema/spec@1.1.0", "", {}, "sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w=="],
 
-    "@supainc/supacatch": ["@supainc/supacatch@workspace:packages/core"],
-
     "@supainc/supacatch-bun": ["@supainc/supacatch-bun@workspace:packages/bun"],
 
     "@supainc/supacatch-cloudflare": ["@supainc/supacatch-cloudflare@workspace:packages/cloudflare"],
+
+    "@supainc/supacatch-core": ["@supainc/supacatch-core@workspace:packages/core"],
 
     "@supainc/supacatch-node": ["@supainc/supacatch-node@workspace:packages/node"],
 

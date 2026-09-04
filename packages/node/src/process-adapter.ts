@@ -1,4 +1,4 @@
-import { FatalAdapter } from "@supainc/supacatch/adapter";
+import { FatalAdapter } from "@supainc/supacatch-core/adapter";
 import process from "node:process";
 
 export const processFatalAdapter = FatalAdapter.of({

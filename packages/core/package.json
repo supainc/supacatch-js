@@ -1,5 +1,5 @@
 {
-  "name": "@supainc/supacatch",
+  "name": "@supainc/supacatch-core",
   "version": "0.1.0-alpha.5",
   "description": "Core SupaCatch JavaScript SDK",
   "license": "MIT",

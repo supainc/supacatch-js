@@ -8,7 +8,7 @@ Official SupaCatch SDKs for server-side JavaScript. This repository uses a Bun w
 
 | Package                             | Purpose                                      |
 | ----------------------------------- | -------------------------------------------- |
-| `@supainc/supacatch`                | Shared client and Effect service             |
+| `@supainc/supacatch-core`           | Shared client and Effect service             |
 | `@supainc/supacatch-node`           | Node.js automatic capture                    |
 | `@supainc/supacatch-bun`            | Bun automatic capture                        |
 | `@supainc/supacatch-cloudflare`     | Cloudflare Worker wrapper                    |
@@ -157,7 +157,7 @@ supaCatch.dispose();
 The shared entry point installs no global handlers:
 
 ```ts
-import { createClient } from "@supainc/supacatch";
+import { createClient } from "@supainc/supacatch-core";
 
 const ingestKey = process.env.SUPACATCH_INGEST_KEY;
 if (!ingestKey) throw new Error("SUPACATCH_INGEST_KEY is required");
@@ -177,7 +177,7 @@ const eventId = await supaCatch.captureException(new Error("Example failure"));
 ```ts
 import { Effect, Layer } from "effect";
 import { FetchHttpClient } from "effect/unstable/http";
-import { layer, SupaCatch } from "@supainc/supacatch/effect";
+import { layer, SupaCatch } from "@supainc/supacatch-core/effect";
 
 const ingestKey = process.env.SUPACATCH_INGEST_KEY;
 if (!ingestKey) throw new Error("SUPACATCH_INGEST_KEY is required");
@@ -194,7 +194,7 @@ Use the runtime Layer when an Effect application also wants automatic capture:
 
 ```ts
 import { Effect } from "effect";
-import { SupaCatch } from "@supainc/supacatch/effect";
+import { SupaCatch } from "@supainc/supacatch-core/effect";
 import { layer } from "@supainc/supacatch-node";
 
 const program = Effect.gen(function* () {
@@ -210,9 +210,9 @@ The runtime Layer removes its global handlers and TanStack automatic capture reg
 
 ## Runtime adapters
 
-`@supainc/supacatch/adapter` is the supported contract for packages that add a SupaCatch runtime integration. Application code should use the runtime packages above instead.
+`@supainc/supacatch-core/adapter` is the supported contract for packages that add a SupaCatch runtime integration. Application code should use the runtime packages above instead.
 
-The adapter entry exports runtime initialization, automatic capture registration, capture context, deduplication, and fatal handling. Other files under `@supainc/supacatch` are private unless the package export map lists them.
+The adapter entry exports runtime initialization, automatic capture registration, capture context, deduplication, and fatal handling. Other files under `@supainc/supacatch-core` are private unless the package export map lists them.
 
 ## Privacy and delivery semantics
 

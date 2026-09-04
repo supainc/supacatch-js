@@ -29,7 +29,7 @@
     "publint": "publint"
   },
   "dependencies": {
-    "@supainc/supacatch": "0.1.0-alpha.5"
+    "@supainc/supacatch-core": "0.1.0-alpha.5"
   },
   "peerDependencies": {
     "effect": "4.0.0-beta.103"

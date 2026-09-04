@@ -1,5 +1,5 @@
-import type { SdkConfig, SupaCatchClient } from "@supainc/supacatch";
-import { initRuntime, runtimeLayer } from "@supainc/supacatch/adapter";
+import type { SdkConfig, SupaCatchClient } from "@supainc/supacatch-core";
+import { initRuntime, runtimeLayer } from "@supainc/supacatch-core/adapter";
 import { processFatalAdapter } from "./process-adapter.js";
 
 export const init = (config: SdkConfig): SupaCatchClient =>
@@ -7,7 +7,7 @@ export const init = (config: SdkConfig): SupaCatchClient =>
 
 export const layer = (config: SdkConfig) => runtimeLayer(config, processFatalAdapter);
 
-export type { SdkConfig, SupaCatchClient } from "@supainc/supacatch";
+export type { SdkConfig, SupaCatchClient } from "@supainc/supacatch-core";
 export {
   CaptureTimeoutError,
   InvalidConfigurationError,
@@ -21,4 +21,4 @@ export {
   EventId,
   EventRequest,
   SubmitEventResponse,
-} from "@supainc/supacatch";
+} from "@supainc/supacatch-core";

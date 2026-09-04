@@ -1,6 +1,6 @@
 import * as BunSdk from "@supainc/supacatch-bun";
 import * as CloudflareSdk from "@supainc/supacatch-cloudflare";
-import * as CoreSdk from "@supainc/supacatch";
+import * as CoreSdk from "@supainc/supacatch-core";
 import * as NodeSdk from "@supainc/supacatch-node";
 import { assert, describe, it } from "@effect/vitest";
 

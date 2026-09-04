@@ -1,5 +1,10 @@
-import { createClient, type SdkConfig, type SupaCatchClient } from "@supainc/supacatch";
-import { beforeFatal, once, runWithContext, type CaptureContext } from "@supainc/supacatch/adapter";
+import { createClient, type SdkConfig, type SupaCatchClient } from "@supainc/supacatch-core";
+import {
+  beforeFatal,
+  once,
+  runWithContext,
+  type CaptureContext,
+} from "@supainc/supacatch-core/adapter";
 import { Effect, MutableRef, Option } from "effect";
 
 export interface CloudflareExecutionContext {
@@ -53,7 +58,7 @@ export const withCatch = <Env, Worker extends CloudflareWorker<Env> = Cloudflare
   },
 });
 
-export type { SdkConfig, SupaCatchClient } from "@supainc/supacatch";
+export type { SdkConfig, SupaCatchClient } from "@supainc/supacatch-core";
 export {
   CaptureTimeoutError,
   InvalidConfigurationError,
@@ -67,4 +72,4 @@ export {
   EventId,
   EventRequest,
   SubmitEventResponse,
-} from "@supainc/supacatch";
+} from "@supainc/supacatch-core";
