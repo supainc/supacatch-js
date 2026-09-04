@@ -24,9 +24,9 @@
     },
     "packages/bun": {
       "name": "@supainc/supacatch-bun",
-      "version": "0.1.0-alpha.5",
+      "version": "0.1.0-alpha.6",
       "dependencies": {
-        "@supainc/supacatch-node": "0.1.0-alpha.5",
+        "@supainc/supacatch-node": "0.1.0-alpha.6",
       },
       "peerDependencies": {
         "effect": "4.0.0-beta.103",
@@ -34,9 +34,9 @@
     },
     "packages/cloudflare": {
       "name": "@supainc/supacatch-cloudflare",
-      "version": "0.1.0-alpha.5",
+      "version": "0.1.0-alpha.6",
       "dependencies": {
-        "@supainc/supacatch-core": "0.1.0-alpha.5",
+        "@supainc/supacatch-core": "0.1.0-alpha.6",
       },
       "peerDependencies": {
         "effect": "4.0.0-beta.103",
@@ -44,16 +44,16 @@
     },
     "packages/core": {
       "name": "@supainc/supacatch-core",
-      "version": "0.1.0-alpha.5",
+      "version": "0.1.0-alpha.6",
       "peerDependencies": {
         "effect": "4.0.0-beta.103",
       },
     },
     "packages/node": {
       "name": "@supainc/supacatch-node",
-      "version": "0.1.0-alpha.5",
+      "version": "0.1.0-alpha.6",
       "dependencies": {
-        "@supainc/supacatch-core": "0.1.0-alpha.5",
+        "@supainc/supacatch-core": "0.1.0-alpha.6",
       },
       "peerDependencies": {
         "effect": "4.0.0-beta.103",
@@ -61,10 +61,10 @@
     },
     "packages/tanstack-start": {
       "name": "@supainc/supacatch-tanstack-start",
-      "version": "0.1.0-alpha.5",
+      "version": "0.1.0-alpha.6",
       "dependencies": {
-        "@supainc/supacatch-cloudflare": "0.1.0-alpha.5",
-        "@supainc/supacatch-core": "0.1.0-alpha.5",
+        "@supainc/supacatch-cloudflare": "0.1.0-alpha.6",
+        "@supainc/supacatch-core": "0.1.0-alpha.6",
       },
       "peerDependencies": {
         "effect": "4.0.0-beta.103",
