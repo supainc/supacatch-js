@@ -44,16 +44,6 @@
         "effect": "4.0.0-beta.103",
       },
     },
-    "packages/deno": {
-      "name": "@supainc/supacatch-deno",
-      "version": "0.1.0-alpha.5",
-      "dependencies": {
-        "@supainc/supacatch": "workspace:*",
-      },
-      "peerDependencies": {
-        "effect": "4.0.0-beta.103",
-      },
-    },
     "packages/node": {
       "name": "@supainc/supacatch-node",
       "version": "0.1.0-alpha.5",
@@ -229,8 +219,6 @@
     "@supainc/supacatch-bun": ["@supainc/supacatch-bun@workspace:packages/bun"],
 
     "@supainc/supacatch-cloudflare": ["@supainc/supacatch-cloudflare@workspace:packages/cloudflare"],
-
-    "@supainc/supacatch-deno": ["@supainc/supacatch-deno@workspace:packages/deno"],
 
     "@supainc/supacatch-node": ["@supainc/supacatch-node@workspace:packages/node"],
 

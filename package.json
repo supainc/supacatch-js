@@ -9,7 +9,7 @@
     "prepare": "effect-tsgo patch && lefthook install",
     "build": "bun run build:core && bun run build:runtimes && bun run build:adapters",
     "build:core": "bun run --cwd packages/core build",
-    "build:runtimes": "bun run --cwd packages/node build && bun run --cwd packages/deno build && bun run --cwd packages/cloudflare build",
+    "build:runtimes": "bun run --cwd packages/node build && bun run --cwd packages/cloudflare build",
     "build:adapters": "bun run --cwd packages/bun build && bun run --cwd packages/tanstack-start build",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",

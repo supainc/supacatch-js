@@ -157,9 +157,6 @@ describe("Node.js global handlers", () => {
   });
 });
 
-const denoCommand =
-  spawnSync("deno", ["--version"], { stdio: "ignore" }).status === 0 ? "deno" : "bunx";
-
 const runtimes: ReadonlyArray<{
   readonly command: string;
   readonly displayName: string;
@@ -168,12 +165,6 @@ const runtimes: ReadonlyArray<{
 }> = [
   { command: "node", displayName: "node", entry: "node", arguments: ["--input-type=module", "-e"] },
   { command: "bun", displayName: "bun", entry: "bun", arguments: ["-e"] },
-  {
-    command: denoCommand,
-    displayName: "deno",
-    entry: "deno",
-    arguments: denoCommand === "deno" ? ["eval"] : ["deno", "eval"],
-  },
 ];
 
 const failureKinds: ReadonlyArray<"exception" | "rejection"> = ["exception", "rejection"];

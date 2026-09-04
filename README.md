@@ -11,7 +11,6 @@ Official SupaCatch SDKs for server-side JavaScript. This repository uses a Bun w
 | `@supainc/supacatch`                | Shared client and Effect service             |
 | `@supainc/supacatch-node`           | Node.js automatic capture                    |
 | `@supainc/supacatch-bun`            | Bun automatic capture                        |
-| `@supainc/supacatch-deno`           | Deno automatic capture                       |
 | `@supainc/supacatch-cloudflare`     | Cloudflare Worker wrapper                    |
 | `@supainc/supacatch-tanstack-start` | TanStack Start middleware and server wrapper |
 
@@ -25,7 +24,6 @@ Replace each alpha import with its package:
 | `@supainc/supacatch-js/effect`         | `@supainc/supacatch/effect`         |
 | `@supainc/supacatch-js/node`           | `@supainc/supacatch-node`           |
 | `@supainc/supacatch-js/bun`            | `@supainc/supacatch-bun`            |
-| `@supainc/supacatch-js/deno`           | `@supainc/supacatch-deno`           |
 | `@supainc/supacatch-js/cloudflare`     | `@supainc/supacatch-cloudflare`     |
 | `@supainc/supacatch-js/tanstack-start` | `@supainc/supacatch-tanstack-start` |
 
@@ -39,12 +37,6 @@ npm install @supainc/supacatch-node@alpha
 
 ```sh
 bun add @supainc/supacatch-bun@alpha
-```
-
-Deno resolves the package through npm:
-
-```ts
-import * as SupaCatch from "npm:@supainc/supacatch-deno@alpha";
 ```
 
 ## Automatic capture
@@ -68,17 +60,6 @@ const supaCatch = SupaCatch.init({ ingestKey });
 import * as SupaCatch from "@supainc/supacatch-bun";
 
 const ingestKey = Bun.env.SUPACATCH_INGEST_KEY;
-if (!ingestKey) throw new Error("SUPACATCH_INGEST_KEY is required");
-
-const supaCatch = SupaCatch.init({ ingestKey });
-```
-
-### Deno
-
-```ts
-import * as SupaCatch from "npm:@supainc/supacatch-deno@alpha";
-
-const ingestKey = Deno.env.get("SUPACATCH_INGEST_KEY");
 if (!ingestKey) throw new Error("SUPACATCH_INGEST_KEY is required");
 
 const supaCatch = SupaCatch.init({ ingestKey });
@@ -165,7 +146,7 @@ The adapter waits for each Event submission before rethrowing the original failu
 
 Exceptions consumed by an application error boundary or converted into an SSR error response before reaching these seams require manual `captureException` calls.
 
-The SDK sends Events to `https://ingest.catch.supa.dev` by default. For Node.js, Bun, and Deno, you can override it when needed:
+The SDK sends Events to `https://ingest.catch.supa.dev` by default. For Node.js and Bun, you can override it when needed:
 
 ```ts
 const supaCatch = SupaCatch.init({
@@ -250,6 +231,5 @@ A successful capture means the ingest endpoint accepted the Event into its queue
 
 - Node.js 20.19 or newer maintained releases
 - Bun 1.3 or newer
-- Deno 2.x
 - Cloudflare Workers
 - ESM only

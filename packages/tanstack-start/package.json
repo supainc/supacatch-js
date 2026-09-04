@@ -21,7 +21,6 @@
       "browser": "./dist/client.js",
       "node": "./dist/server.js",
       "bun": "./dist/server.js",
-      "deno": "./dist/server.js",
       "import": "./dist/server.js"
     },
     "./package.json": "./package.json"
@@ -31,7 +30,7 @@
     "provenance": true
   },
   "scripts": {
-    "build": "bun ../../scripts/clean.ts dist && tsc -p tsconfig.build.json && bun ../../scripts/add-ts-self-types.ts dist",
+    "build": "bun ../../scripts/clean.ts dist && tsc -p tsconfig.build.json",
     "publint": "publint"
   },
   "dependencies": {

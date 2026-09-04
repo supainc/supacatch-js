@@ -28,7 +28,6 @@ jobs:
             packages/core \
             packages/node \
             packages/bun \
-            packages/deno \
             packages/cloudflare \
             packages/tanstack-start
           do
