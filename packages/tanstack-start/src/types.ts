@@ -28,8 +28,6 @@ type FunctionMiddlewareTypes = {
 };
 
 type TanStackMiddlewareOptions = {
-  // TanStack Start changes the concrete handler types as middleware context is inferred.
-  // `any` keeps this structural adapter compatible without a runtime framework dependency.
   readonly server?: (...arguments_: Array<any>) => any;
 };
 
@@ -46,6 +44,5 @@ export type SupaCatchFunctionMiddleware = {
 };
 
 export type TanStackServerEntry = {
-  // Workers and Node disagree on fetch arity; `any` matches the middleware adapter pattern above.
   readonly fetch: (...arguments_: Array<any>) => Response | Promise<Response>;
 };

@@ -21,9 +21,7 @@ export const processFatalAdapter = FatalAdapter.of({
   onFirstFatal: (value) => {
     try {
       console.error(value);
-    } catch {
-      // Fatal handling must continue even if console output fails.
-    }
+    } catch {}
   },
   finishFatal: () => process.exit(1),
   finishDuplicateFatal: () => process.exit(1),
