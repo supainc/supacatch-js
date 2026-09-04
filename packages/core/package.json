@@ -1,0 +1,47 @@
+{
+  "name": "@supainc/supacatch",
+  "version": "0.1.0-alpha.5",
+  "description": "Core SupaCatch JavaScript SDK",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/supainc/supacatch-js.git",
+    "directory": "packages/core"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": [
+    "./dist/internal/automatic.js"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./effect": {
+      "types": "./dist/effect.d.ts",
+      "import": "./dist/effect.js"
+    },
+    "./adapter": {
+      "types": "./dist/adapter.d.ts",
+      "import": "./dist/adapter.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "tsc -b tsconfig.build.json",
+    "publint": "publint"
+  },
+  "peerDependencies": {
+    "effect": "4.0.0-beta.103"
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  }
+}

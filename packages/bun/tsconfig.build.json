@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.build.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "tsBuildInfoFile": "../../node_modules/.cache/tsbuildinfo/bun.tsbuildinfo"
+  },
+  "include": ["src"],
+  "references": [{ "path": "../node/tsconfig.build.json" }]
+}
