@@ -1,5 +1,5 @@
 import type { SdkConfig } from "@supainc/supacatch";
-import { captureAutomatic } from "@supainc/supacatch/internal/automatic";
+import { captureAutomatic } from "@supainc/supacatch/adapter";
 import { withCatch, type CloudflareWorker } from "@supainc/supacatch-cloudflare";
 import { Effect } from "effect";
 import type {

@@ -2,7 +2,12 @@
   "extends": "../../tsconfig.build.json",
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": "src"
+    "rootDir": "src",
+    "tsBuildInfoFile": "../../node_modules/.cache/tsbuildinfo/tanstack-start.tsbuildinfo"
   },
-  "include": ["src"]
+  "include": ["src"],
+  "references": [
+    { "path": "../core/tsconfig.build.json" },
+    { "path": "../cloudflare/tsconfig.build.json" }
+  ]
 }

@@ -221,6 +221,12 @@ await Effect.runPromise(program);
 
 The runtime Layer removes its global handlers and TanStack automatic capture registration when its scope closes.
 
+## Runtime adapters
+
+`@supainc/supacatch/adapter` is the supported contract for packages that add a SupaCatch runtime integration. Application code should use the runtime packages above instead.
+
+The adapter entry exports runtime initialization, automatic capture registration, capture context, deduplication, and fatal handling. Other files under `@supainc/supacatch` are private unless the package export map lists them.
+
 ## Privacy and delivery semantics
 
 SupaCatch sends exception names, messages, raw stack strings, and capture timestamps. This release has no redaction hook or source-map processing. Never place an Ingest Key in logs, client-side bundles, or public configuration.

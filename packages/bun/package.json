@@ -25,7 +25,7 @@
     "provenance": true
   },
   "scripts": {
-    "build": "bun ../../scripts/clean.ts dist && tsc -p tsconfig.build.json",
+    "build": "tsc -b tsconfig.build.json",
     "publint": "publint"
   },
   "dependencies": {

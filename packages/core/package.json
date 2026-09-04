@@ -12,7 +12,10 @@
     "dist"
   ],
   "type": "module",
-  "sideEffects": false,
+  "sideEffects": [
+    "./dist/adapter.js",
+    "./dist/internal/automatic.js"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -22,25 +25,9 @@
       "types": "./dist/effect.d.ts",
       "import": "./dist/effect.js"
     },
-    "./internal/automatic": {
-      "types": "./dist/internal/automatic.d.ts",
-      "import": "./dist/internal/automatic.js"
-    },
-    "./internal/context": {
-      "types": "./dist/internal/context.d.ts",
-      "import": "./dist/internal/context.js"
-    },
-    "./internal/dedupe": {
-      "types": "./dist/internal/dedupe.d.ts",
-      "import": "./dist/internal/dedupe.js"
-    },
-    "./internal/fatal": {
-      "types": "./dist/internal/fatal.d.ts",
-      "import": "./dist/internal/fatal.js"
-    },
-    "./internal/runtime": {
-      "types": "./dist/internal/runtime.d.ts",
-      "import": "./dist/internal/runtime.js"
+    "./adapter": {
+      "types": "./dist/adapter.d.ts",
+      "import": "./dist/adapter.js"
     },
     "./package.json": "./package.json"
   },
@@ -49,7 +36,7 @@
     "provenance": true
   },
   "scripts": {
-    "build": "bun ../../scripts/clean.ts dist && tsc -p tsconfig.build.json",
+    "build": "tsc -b tsconfig.build.json",
     "publint": "publint"
   },
   "peerDependencies": {

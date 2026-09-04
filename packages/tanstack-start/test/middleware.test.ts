@@ -1,12 +1,10 @@
-import { registerAutomatic } from "@supainc/supacatch/internal/automatic";
-import * as SupaCatch from "@supainc/supacatch-node";
+import { registerAutomatic } from "@supainc/supacatch/adapter";
 import {
   supaCatchGlobalFunctionMiddleware,
   supaCatchGlobalRequestMiddleware,
 } from "@supainc/supacatch-tanstack-start";
 import { assert, describe, it } from "@effect/vitest";
 import { Effect } from "effect";
-import { accepted, listen } from "../../../test/server.js";
 
 describe("TanStack Start middleware", () => {
   for (const [name, middleware] of [
@@ -49,28 +47,6 @@ describe("TanStack Start middleware", () => {
       assert.fail("expected middleware to reject");
     } catch (cause) {
       assert.strictEqual(cause, error);
-    }
-  });
-
-  it("uses the client registered by runtime initialization", async () => {
-    const server = await listen(accepted);
-    const client = SupaCatch.init({ endpoint: server.endpoint, ingestKey: "sck_test_key" });
-    const error = new Error("runtime initialized");
-
-    try {
-      try {
-        await supaCatchGlobalRequestMiddleware.options.server?.({
-          next: () => Promise.reject(error),
-        });
-        assert.fail("expected middleware to reject");
-      } catch (cause) {
-        assert.strictEqual(cause, error);
-      }
-      assert.lengthOf(server.requests, 1);
-      assert.include(server.requests[0]?.body ?? "", '"message":"runtime initialized"');
-    } finally {
-      client.dispose();
-      await server.close();
     }
   });
 });

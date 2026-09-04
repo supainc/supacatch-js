@@ -39,7 +39,7 @@ export const installFatalCapture = Effect.fn("SupaCatch.installFatalCapture")(fu
       return false;
     }
 
-    adapter.onFirstFatal(value);
+    Effect.runSync(Effect.sync(() => adapter.onFirstFatal(value)).pipe(Effect.ignoreCause));
     void capture(value).finally(() => adapter.finishFatal(value));
     return true;
   });

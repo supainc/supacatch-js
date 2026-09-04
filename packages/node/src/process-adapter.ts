@@ -1,4 +1,4 @@
-import { FatalAdapter } from "@supainc/supacatch/internal/fatal";
+import { FatalAdapter } from "@supainc/supacatch/adapter";
 import process from "node:process";
 
 export const processFatalAdapter = FatalAdapter.of({
@@ -18,11 +18,7 @@ export const processFatalAdapter = FatalAdapter.of({
       process.off("unhandledRejection", onRejection);
     };
   },
-  onFirstFatal: (value) => {
-    try {
-      console.error(value);
-    } catch {}
-  },
+  onFirstFatal: (value) => console.error(value),
   finishFatal: () => process.exit(1),
   finishDuplicateFatal: () => process.exit(1),
 });

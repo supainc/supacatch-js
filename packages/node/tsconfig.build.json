@@ -2,7 +2,9 @@
   "extends": "../../tsconfig.build.json",
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": "src"
+    "rootDir": "src",
+    "tsBuildInfoFile": "../../node_modules/.cache/tsbuildinfo/node.tsbuildinfo"
   },
-  "include": ["src"]
+  "include": ["src"],
+  "references": [{ "path": "../core/tsconfig.build.json" }]
 }

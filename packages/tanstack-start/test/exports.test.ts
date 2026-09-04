@@ -2,6 +2,8 @@ import { assert, describe, it } from "@effect/vitest";
 import { execFileSync } from "node:child_process";
 import { resolve } from "node:path";
 
+const packageRoot = resolve(import.meta.dirname, "..");
+
 const resolveMiddleware = (conditions: ReadonlyArray<string>): string =>
   execFileSync(
     "node",
@@ -11,7 +13,7 @@ const resolveMiddleware = (conditions: ReadonlyArray<string>): string =>
       "--eval",
       'const { supaCatchGlobalRequestMiddleware: middleware } = await import("@supainc/supacatch-tanstack-start"); process.stdout.write(typeof middleware.options.server)',
     ],
-    { cwd: resolve("packages/tanstack-start"), encoding: "utf8" },
+    { cwd: packageRoot, encoding: "utf8" },
   );
 
 describe("TanStack Start package exports", () => {
