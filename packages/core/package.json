@@ -33,7 +33,7 @@
     "provenance": true
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.build.json && bun ../../scripts/rewrite-declaration-imports.ts dist",
     "publint": "publint"
   },
   "peerDependencies": {
