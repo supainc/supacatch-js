@@ -13,7 +13,6 @@
   ],
   "type": "module",
   "sideEffects": [
-    "./dist/adapter.js",
     "./dist/internal/automatic.js"
   ],
   "exports": {
