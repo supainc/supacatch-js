@@ -14,19 +14,6 @@ Official SupaCatch SDKs for server-side JavaScript. This repository uses a Bun w
 | `@supainc/supacatch-cloudflare`     | Cloudflare Worker wrapper                    |
 | `@supainc/supacatch-tanstack-start` | TanStack Start middleware and server wrapper |
 
-### Migrate from `@supainc/supacatch-js`
-
-Replace each alpha import with its package:
-
-| Previous import                        | New import                          |
-| -------------------------------------- | ----------------------------------- |
-| `@supainc/supacatch-js`                | `@supainc/supacatch`                |
-| `@supainc/supacatch-js/effect`         | `@supainc/supacatch/effect`         |
-| `@supainc/supacatch-js/node`           | `@supainc/supacatch-node`           |
-| `@supainc/supacatch-js/bun`            | `@supainc/supacatch-bun`            |
-| `@supainc/supacatch-js/cloudflare`     | `@supainc/supacatch-cloudflare`     |
-| `@supainc/supacatch-js/tanstack-start` | `@supainc/supacatch-tanstack-start` |
-
 ## Install
 
 Install the package for your runtime:
