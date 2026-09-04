@@ -1,0 +1,9 @@
+{
+  "name": "verify-supacatch",
+  "private": true,
+  "description": "Verification harness for the SupaCatch dashboard and ingest worker. Not part of the app.",
+  "type": "module",
+  "dependencies": {
+    "playwright": "1.55.0"
+  }
+}

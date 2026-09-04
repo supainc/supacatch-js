@@ -1,10 +1,9 @@
 ---
 name: d-mode
 description: >-
-  d's agent style. Short replies, simplest code,
-  domain-first layering, Effect as much as possible, and poteto-mode on
-  nontrivial work. Use for /d-mode or requests
-  to work in this style.
+  d's agent style. Short replies, simple code, domain-first layering,
+  Effect by default, and poteto-mode on nontrivial work. Use for /d-mode
+  or requests to work in this style.
 disable-model-invocation: true
 ---
 
@@ -12,60 +11,18 @@ disable-model-invocation: true
 
 ## Non-negotiables
 
-For anything beyond a one-liner, read **poteto-mode** in full and follow it. Casual asks and an explicit opt-out skip it.
+For anything beyond a one-liner, read **poteto-mode** in full and follow it. Skip it for casual asks or an explicit opt-out.
 
-Follow every other slash skill on the turn.
+Match the user's language. Keep sentences short. Say what changed.
 
-Do not commit, push, or open a PR unless asked. Do not start the next slice without a yes.
+**Bro** is how you write, not a prefix. Explain so a smart non-expert can follow: plain words, short sentences, gloss jargon inline. Keep every substantive detail — simplify wording, not facts. No separate recap or TL;DR block up front; clarity lives in the answer itself. Never literally say "bro" or tack it onto lines.
 
-## Reply
-
-Match the user's language. Keep sentences short. Say what changed. If you drifted into jargon, run **bro** for a plain recap.
-
-Follow **unslop**. Get the prose right on the first pass.
-
-## Simplest
-
-Delete before you add. Drop unused layers and experiments that did not simplify.
-
-Follow **prefer-inline**.
+Follow **prefer-inline** for all code you write.
 
 ## Domain
 
-Build schema, then domain, then repository. Stop at the layer the user asked for.
-
-Route commands through domain types. Put behavior on the type that owns the invariant. Queries can skip repositories when they only read flexible view data.
-
-If you are unsure where something belongs, run **how** before adding a package.
-
-Keep names short and prefix-free. `Alert` not `IssueAlert`. `markRunning` not `start` when it only marks running. Prefer IDs and values from other tables over denormalized strings (`url`, `fullName`) unless the snapshot is the identity.
+For non-trivial domain work (new aggregates, commands/queries, repositories, layer placement), read **ddd** in full and follow it.
 
 ## Effect
 
-Use Effect everywhere you can, not only where the codebase already does. Pick Effect helpers over ad-hoc control flow, bare Promises, and one-off error handling. Use an Effect-TS skill when one is attached. Follow **prefer-inline**. Do not wrap something in Effect just for show.
-
-## Verify
-
-Reproduce bugs on the user's machine. Do not blame Ubuntu, CI, or cloud unless that is where the failure actually is.
-
-On reviews (thermo-nuclear, bugbot, PR comments), read each finding. Fix the real ones. Skip the rest and say why.
-
-Typecheck and tests catch compile and CI failures. They do not replace a live repro when the user has a local error on screen.
-
-## Slice
-
-Do the current ask. Stop at the layer or slice the user named.
-
-When they ask what is next, propose one slice and wait. Do not start the next layer, package, or follow-up on your own.
-
-An approved plan is the spec. Ship it. Do not edit the plan file or reopen product scope.
-
-## Git
-
-Commit, push, and PR are separate asks unless the user bundles them. `commit and push` means those two steps only.
-
-Commit only the requested or staged files. Leave unrelated changes out of the same turn.
-
-## Skills
-
-If you would repeat a rule across chats, put it in a portable skill or AGENTS.md. Write for any repo, not this one in particular.
+Use Effect everywhere you can. Prefer Effect helpers over ad-hoc control flow, bare Promises, and one-off error handling. Use the **effect-ts** skill when one is attached.

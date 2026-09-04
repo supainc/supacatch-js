@@ -1,0 +1,45 @@
+{
+  "skill_name": "d-mode",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add a tiny Alert feature in Effect TypeScript. Greenfield layout under ./src is fine. Need: branded AlertId, an Alert schema/class with status idle|running and a markRunning method, one repository that load/saves the aggregate, and a markAlertRunning command. Keep it small. Don't invent a full HTTP API.",
+      "expected_output": "Reads ddd for the layered layout; Schema → domain → repository → command; Effect-based code; short names (Alert not IssueAlert); markRunning not a vague start; prefer-inline (no thin wrappers); reply in plain bro voice throughout (no separate recap block, no literal 'bro').",
+      "files": [],
+      "assertions": [
+        "notes.md or the transcript shows the agent read the ddd skill",
+        "Code uses Effect (Effect.fn, Effect.gen, Schema, or Layer) rather than bare Promises for the command/repository path",
+        "Alert type/class is named Alert (not IssueAlert or similar prefixed name)",
+        "Domain method is named markRunning (not start/run/setRunning alone as the primary name)",
+        "There is a separate repository module and a command/application module (not all logic in one file)",
+        "reply.md is written in plain bro voice (understandable wording) without a separate recap block or literal 'bro' prefix",
+        "No thin one-line wrapper helpers that only restating equality or string templates"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Here's a helper I'm about to commit. Should I keep it or inline it? Reply in Korean if you can.\n\n```ts\nconst isUnresolved = (status: string) => status === \"unresolved\"\n\nexport function countUnresolved(items: { status: string }[]) {\n  return items.filter(isUnresolved).length\n}\n```",
+      "expected_output": "Says to inline isUnresolved (prefer-inline fail case); matches Korean; short; plain bro voice throughout (no recap block, no literal 'bro').",
+      "files": [],
+      "assertions": [
+        "Reply recommends inlining isUnresolved (not keeping the helper)",
+        "Reply is primarily in Korean",
+        "notes.md shows prefer-inline was read",
+        "reply.md is written in plain bro voice (understandable wording) without a separate recap block or literal 'bro' prefix",
+        "Reply does not load or require ddd for this non-domain question"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Quick: what's 2+2? Don't overthink it.",
+      "expected_output": "Casual one-liner; does NOT load poteto-mode or spin up a big workflow; still short and plain (no literal 'bro').",
+      "files": [],
+      "assertions": [
+        "Reply correctly says 4",
+        "notes.md states poteto-mode was skipped because the ask is casual",
+        "Reply is short (under ~5 sentences)",
+        "Reply does not create source files or run a multi-step coding workflow"
+      ]
+    }
+  ]
+}
