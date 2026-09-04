@@ -1,6 +1,6 @@
 {
   "name": "@supainc/supacatch-cloudflare",
-  "version": "0.1.0-alpha.5",
+  "version": "0.1.0-alpha.6",
   "description": "SupaCatch SDK for Cloudflare Workers",
   "license": "MIT",
   "repository": {
@@ -29,7 +29,7 @@
     "publint": "publint"
   },
   "dependencies": {
-    "@supainc/supacatch-core": "0.1.0-alpha.5"
+    "@supainc/supacatch-core": "0.1.0-alpha.6"
   },
   "peerDependencies": {
     "effect": "4.0.0-beta.103"
