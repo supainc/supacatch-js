@@ -18,9 +18,7 @@ interface ActiveRegistration {
 
 const fatalDeliveryDeadline = Duration.seconds(2);
 
-// Module-level on purpose: at most one registration may own the global
-// handlers, across every client and runtime in the process.
-const activeRegistration = MutableRef.make(Option.none<ActiveRegistration>());
+const activeGlobalHandlerRegistration = MutableRef.make(Option.none<ActiveRegistration>());
 
 export const beforeFatal = (capture: Effect.Effect<unknown, unknown>): Effect.Effect<void> =>
   Effect.raceFirst(capture.pipe(Effect.ignoreCause), Effect.sleep(fatalDeliveryDeadline));
@@ -52,7 +50,10 @@ export const installFatalCapture = Effect.fn("SupaCatch.installFatalCapture")(fu
     removeHandlers();
   };
 
-  const previous = MutableRef.getAndSet(activeRegistration, Option.some({ token, deactivate }));
+  const previous = MutableRef.getAndSet(
+    activeGlobalHandlerRegistration,
+    Option.some({ token, deactivate }),
+  );
   Option.match(previous, {
     onNone: () => undefined,
     onSome: (registration) => registration.deactivate(),
@@ -60,11 +61,11 @@ export const installFatalCapture = Effect.fn("SupaCatch.installFatalCapture")(fu
 
   return () => {
     const isCurrent = Option.exists(
-      MutableRef.get(activeRegistration),
+      MutableRef.get(activeGlobalHandlerRegistration),
       (registration) => registration.token === token,
     );
     if (!isCurrent) return;
-    MutableRef.set(activeRegistration, Option.none());
+    MutableRef.set(activeGlobalHandlerRegistration, Option.none());
     deactivate();
   };
 });

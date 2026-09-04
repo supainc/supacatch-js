@@ -22,9 +22,25 @@
       "types": "./dist/effect.d.ts",
       "import": "./dist/effect.js"
     },
-    "./internal/*": {
-      "types": "./dist/internal/*.d.ts",
-      "import": "./dist/internal/*.js"
+    "./internal/automatic": {
+      "types": "./dist/internal/automatic.d.ts",
+      "import": "./dist/internal/automatic.js"
+    },
+    "./internal/context": {
+      "types": "./dist/internal/context.d.ts",
+      "import": "./dist/internal/context.js"
+    },
+    "./internal/dedupe": {
+      "types": "./dist/internal/dedupe.d.ts",
+      "import": "./dist/internal/dedupe.js"
+    },
+    "./internal/fatal": {
+      "types": "./dist/internal/fatal.d.ts",
+      "import": "./dist/internal/fatal.js"
+    },
+    "./internal/runtime": {
+      "types": "./dist/internal/runtime.d.ts",
+      "import": "./dist/internal/runtime.js"
     },
     "./package.json": "./package.json"
   },
@@ -33,7 +49,7 @@
     "provenance": true
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json && bun ../../scripts/rewrite-declaration-imports.ts dist",
+    "build": "bun ../../scripts/clean.ts dist && tsc -p tsconfig.build.json && bun ../../scripts/add-ts-self-types.ts dist",
     "publint": "publint"
   },
   "peerDependencies": {

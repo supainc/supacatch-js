@@ -18,7 +18,8 @@
     "format": "oxfmt .",
     "format:check": "oxfmt --check .",
     "publint": "bun run --filter '*' publint",
-    "check": "bun run lint:check && bun run format:check && bun run build && bun run typecheck && bun run test && bun run publint"
+    "check:versions": "bun scripts/check-package-versions.ts",
+    "check": "bun run lint:check && bun run format:check && bun run check:versions && bun run build && bun run typecheck && bun run test && bun run publint"
   },
   "devDependencies": {
     "@effect/tsgo": "0.36.5",

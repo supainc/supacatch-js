@@ -25,7 +25,7 @@
     "provenance": true
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "bun ../../scripts/clean.ts dist && tsc -p tsconfig.build.json && bun ../../scripts/add-ts-self-types.ts dist",
     "publint": "publint"
   },
   "dependencies": {
