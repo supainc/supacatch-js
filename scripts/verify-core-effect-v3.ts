@@ -79,7 +79,8 @@ try {
   if (
     typeof dependencies !== "object" ||
     dependencies === null ||
-    Object.keys(dependencies).length !== 2
+    Object.keys(dependencies).length !== 1 ||
+    !Object.hasOwn(dependencies, "effect")
   ) {
     throw new Error("the isolated project resolved unexpected dependencies");
   }
