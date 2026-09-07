@@ -1,40 +1,68 @@
-import { Duration, Effect, Schema } from "effect";
 import { InvalidConfigurationError } from "./errors.js";
 
-const Config = Schema.Struct({
-  endpoint: Schema.URLFromString.pipe(
-    Schema.check(
-      Schema.makeFilter((endpoint) =>
-        endpoint.protocol === "http:" || endpoint.protocol === "https:"
-          ? true
-          : "endpoint must use HTTP or HTTPS",
-      ),
-    ),
-    Schema.withDecodingDefault(Effect.succeed("https://ingest.catch.supa.dev")),
-  ),
-  ingestKey: Schema.RedactedFromValue(Schema.String.pipe(Schema.check(Schema.isMinLength(8)))),
-  requestTimeout: Schema.DurationFromMillis.pipe(
-    Schema.check(
-      Schema.makeFilter((requestTimeout) =>
-        Duration.isFinite(requestTimeout) && Duration.isPositive(requestTimeout)
-          ? true
-          : "requestTimeout must be a positive number of milliseconds",
-      ),
-    ),
-    Schema.withDecodingDefault(Effect.succeed(5_000)),
-  ),
-});
+export interface SdkConfig {
+  readonly endpoint?: string;
+  readonly ingestKey: string;
+  readonly requestTimeout?: number;
+}
 
-export type SdkConfig = typeof Config.Encoded;
-export type RuntimeConfig = typeof Config.Type;
+export interface RuntimeConfig {
+  readonly endpoint: URL;
+  readonly ingestKey: string;
+  readonly requestTimeout: number;
+}
 
-export const resolveConfig = Effect.fn("SupaCatch.resolveConfig")((input: SdkConfig) =>
-  Schema.decodeEffect(Config)(input).pipe(
-    Effect.mapError(
-      (error) =>
-        new InvalidConfigurationError({
-          issue: error.message,
-        }),
-    ),
-  ),
-);
+export const resolveConfig = (input: SdkConfig): RuntimeConfig => {
+  if (typeof input !== "object" || input === null) {
+    throw new InvalidConfigurationError({
+      issue: "configuration must be an object",
+    });
+  }
+
+  const endpointInput =
+    input.endpoint === undefined ? "https://ingest.catch.supa.dev" : input.endpoint;
+  if (typeof endpointInput !== "string") {
+    throw new InvalidConfigurationError({
+      issue: "endpoint must be a valid URL",
+    });
+  }
+
+  let endpoint: URL;
+
+  try {
+    endpoint = new URL(endpointInput);
+  } catch {
+    throw new InvalidConfigurationError({
+      issue: "endpoint must be a valid URL",
+    });
+  }
+
+  if (endpoint.protocol !== "http:" && endpoint.protocol !== "https:") {
+    throw new InvalidConfigurationError({
+      issue: "endpoint must use HTTP or HTTPS",
+    });
+  }
+
+  if (typeof input.ingestKey !== "string" || input.ingestKey.length < 8) {
+    throw new InvalidConfigurationError({
+      issue: "ingestKey must contain at least 8 characters",
+    });
+  }
+
+  const requestTimeout = input.requestTimeout === undefined ? 5_000 : input.requestTimeout;
+  if (
+    typeof requestTimeout !== "number" ||
+    !Number.isFinite(requestTimeout) ||
+    requestTimeout <= 0
+  ) {
+    throw new InvalidConfigurationError({
+      issue: "requestTimeout must be a positive number of milliseconds",
+    });
+  }
+
+  return {
+    endpoint,
+    ingestKey: input.ingestKey,
+    requestTimeout,
+  };
+};

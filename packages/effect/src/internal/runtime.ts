@@ -1,9 +1,11 @@
+import {
+  createClient,
+  type InvalidConfigurationError,
+  type SdkConfig,
+  type SupaCatchClient,
+} from "@supainc/supacatch-core";
 import { Effect, Layer } from "effect";
-import { FetchHttpClient } from "effect/unstable/http";
-import type { SdkConfig } from "../config.js";
-import type { InvalidConfigurationError } from "../errors.js";
-import { layer as supaCatchLayer, SupaCatch } from "../effect.js";
-import { createClient, type SupaCatchClient } from "../client.js";
+import { layer as supaCatchLayer, SupaCatch } from "../index.js";
 import { registerAutomatic } from "./automatic.js";
 import {
   captureBeforeFatal,
@@ -51,4 +53,4 @@ export const layer = (
       );
       return service;
     }).pipe(Effect.provideService(FatalAdapter, adapter)),
-  ).pipe(Layer.provide(supaCatchLayer(config)), Layer.provide(FetchHttpClient.layer));
+  ).pipe(Layer.provide(supaCatchLayer(config)));

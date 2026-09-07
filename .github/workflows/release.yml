@@ -22,10 +22,31 @@ jobs:
           bun-version: 1.3.14
       - run: bun install --frozen-lockfile
       - run: bun run check
+      - name: Guard Effect package against a stale core release
+        run: |
+          core_name=$(node -p "require('./packages/core/package.json').name")
+          core_version=$(node -p "require('./packages/core/package.json').version")
+          effect_name=$(node -p "require('./packages/effect/package.json').name")
+          effect_version=$(node -p "require('./packages/effect/package.json').version")
+
+          if npm view "$effect_name@$effect_version" version >/dev/null 2>&1; then
+            exit 0
+          fi
+
+          if npm view "$core_name@$core_version" version >/dev/null 2>&1; then
+            published_core_effect_peer=$(
+              npm view "$core_name@$core_version" peerDependencies.effect 2>/dev/null || true
+            )
+            if [ -n "$published_core_effect_peer" ]; then
+              echo "::error::$effect_name@$effect_version cannot use the stale $core_name@$core_version release, which still peers on effect@$published_core_effect_peer"
+              exit 1
+            fi
+          fi
       - name: Publish packages
         run: |
           for package in \
             packages/core \
+            packages/effect \
             packages/node \
             packages/bun \
             packages/cloudflare \

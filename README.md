@@ -8,7 +8,8 @@ Official SupaCatch SDKs for server-side JavaScript. This repository uses a Bun w
 
 | Package                             | Purpose                                      |
 | ----------------------------------- | -------------------------------------------- |
-| `@supainc/supacatch-core`           | Shared client and Effect service             |
+| `@supainc/supacatch-core`           | Shared Promise client and protocol           |
+| `@supainc/supacatch-effect`         | Effect service and runtime adapter contract  |
 | `@supainc/supacatch-node`           | Node.js automatic capture                    |
 | `@supainc/supacatch-bun`            | Bun automatic capture                        |
 | `@supainc/supacatch-cloudflare`     | Cloudflare Worker wrapper                    |
@@ -172,12 +173,19 @@ const eventId = await supaCatch.captureException(new Error("Example failure"));
 
 `captureException` accepts `unknown`, performs exactly one request, and resolves with the Event ID only after the ingest endpoint returns a valid `202` response. It never retries.
 
+`@supainc/supacatch-core` uses the Web Fetch API and does not depend on Effect.
+
 ## Effect
 
+Install the explicit Effect integration with its exact Effect v4 peer:
+
+```sh
+npm install @supainc/supacatch-effect@alpha effect@4.0.0-beta.103
+```
+
 ```ts
-import { Effect, Layer } from "effect";
-import { FetchHttpClient } from "effect/unstable/http";
-import { layer, SupaCatch } from "@supainc/supacatch-core/effect";
+import { Effect } from "effect";
+import { layer, SupaCatch } from "@supainc/supacatch-effect";
 
 const ingestKey = process.env.SUPACATCH_INGEST_KEY;
 if (!ingestKey) throw new Error("SUPACATCH_INGEST_KEY is required");
@@ -185,7 +193,7 @@ if (!ingestKey) throw new Error("SUPACATCH_INGEST_KEY is required");
 const program = Effect.gen(function* () {
   const supaCatch = yield* SupaCatch;
   return yield* supaCatch.captureException(new Error("Example failure"));
-}).pipe(Effect.provide(layer({ ingestKey }).pipe(Layer.provide(FetchHttpClient.layer))));
+}).pipe(Effect.provide(layer({ ingestKey })));
 ```
 
 Expected failures remain typed in the Effect error channel and reject Promise calls as the corresponding public error instances.
@@ -194,7 +202,7 @@ Use the runtime Layer when an Effect application also wants automatic capture:
 
 ```ts
 import { Effect } from "effect";
-import { SupaCatch } from "@supainc/supacatch-core/effect";
+import { SupaCatch } from "@supainc/supacatch-effect";
 import { layer } from "@supainc/supacatch-node";
 
 const program = Effect.gen(function* () {
@@ -210,9 +218,9 @@ The runtime Layer removes its global handlers and TanStack automatic capture reg
 
 ## Runtime adapters
 
-`@supainc/supacatch-core/adapter` is the supported contract for packages that add a SupaCatch runtime integration. Application code should use the runtime packages above instead.
+`@supainc/supacatch-effect/adapter` is the supported contract for packages that add an Effect-based SupaCatch runtime integration. Application code should use the runtime packages above instead.
 
-The adapter entry exports runtime initialization, automatic capture registration, capture context, deduplication, and fatal handling. Other files under `@supainc/supacatch-core` are private unless the package export map lists them.
+The adapter entry exports runtime initialization, automatic capture registration, capture context, deduplication, and fatal handling. Other files under `@supainc/supacatch-effect` are private unless the package export map lists them.
 
 ## Privacy and delivery semantics
 
@@ -225,4 +233,5 @@ A successful capture means the ingest endpoint accepted the Event into its queue
 - Node.js 20.19 or newer maintained releases
 - Bun 1.3 or newer
 - Cloudflare Workers
+- Effect `4.0.0-beta.103` for Effect and runtime packages
 - ESM only

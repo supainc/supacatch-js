@@ -1,6 +1,6 @@
 import type { SdkConfig } from "@supainc/supacatch-core";
-import { captureAutomatic } from "@supainc/supacatch-core/adapter";
 import { withCatch, type CloudflareWorker } from "@supainc/supacatch-cloudflare";
+import { captureAutomatic } from "@supainc/supacatch-effect/adapter";
 import { Effect } from "effect";
 import type {
   SupaCatchFunctionMiddleware,

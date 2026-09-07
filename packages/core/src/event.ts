@@ -1,30 +1,56 @@
-import { DateTime, Option, Predicate, Schema } from "effect";
+const eventIdPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-export const EventId = Schema.String.pipe(Schema.check(Schema.isUUID(7)), Schema.brand("EventId"));
-export type EventId = typeof EventId.Type;
+declare const eventIdBrand: unique symbol;
 
-const EventTimestamp = Schema.String.pipe(
-  Schema.check(Schema.isPattern(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/)),
-);
+export type EventId = string & {
+  readonly [eventIdBrand]: "EventId";
+};
 
-export class EventRequest extends Schema.Class<EventRequest>("EventRequest")({
-  name: Schema.NonEmptyString.pipe(Schema.check(Schema.isMaxLength(200))),
-  message: Schema.String.pipe(Schema.check(Schema.isMaxLength(10_000))),
-  stackTrace: Schema.optional(
-    Schema.NullOr(Schema.String.pipe(Schema.check(Schema.isMaxLength(70_000)))),
-  ),
-  timestamp: EventTimestamp,
-}) {}
+export const EventId = {
+  is: (value: unknown): value is EventId => typeof value === "string" && eventIdPattern.test(value),
+  make: (value: string): EventId => {
+    if (!EventId.is(value)) {
+      throw new TypeError("eventId must be a UUIDv7 string");
+    }
+    return value;
+  },
+};
 
-export class SubmitEventResponse extends Schema.Class<SubmitEventResponse>("SubmitEventResponse")({
-  eventId: EventId,
-}) {}
+export class EventRequest {
+  readonly name: string;
+  readonly message: string;
+  readonly stackTrace?: string | null;
+  readonly timestamp: string;
 
-const readString = (value: object, property: string): string | undefined =>
-  Option.liftThrowable(() => Reflect.get(value, property))().pipe(
-    Option.filter(Predicate.isString),
-    Option.getOrUndefined,
-  );
+  constructor(input: {
+    readonly name: string;
+    readonly message: string;
+    readonly stackTrace?: string | null;
+    readonly timestamp: string;
+  }) {
+    this.name = input.name;
+    this.message = input.message;
+    if ("stackTrace" in input) this.stackTrace = input.stackTrace;
+    this.timestamp = input.timestamp;
+  }
+}
+
+export class SubmitEventResponse {
+  readonly eventId: EventId;
+
+  constructor({ eventId }: { readonly eventId: EventId }) {
+    this.eventId = eventId;
+  }
+}
+
+const readString = (value: object, property: string): string | undefined => {
+  try {
+    const result = Reflect.get(value, property);
+    return typeof result === "string" ? result : undefined;
+  } catch {
+    return undefined;
+  }
+};
 
 const stringify = (value: unknown): string => {
   if (typeof value === "string") return value;
@@ -33,8 +59,8 @@ const stringify = (value: unknown): string => {
   }
 
   const seen = new WeakSet<object>();
-  return Option.liftThrowable(() =>
-    JSON.stringify(value, (_key: string, entry: unknown) => {
+  try {
+    const result = JSON.stringify(value, (_key: string, entry: unknown) => {
       if (typeof entry === "bigint" || typeof entry === "symbol") {
         return globalThis.String(entry);
       }
@@ -45,19 +71,26 @@ const stringify = (value: unknown): string => {
       }
 
       return entry;
-    }),
-  )().pipe(
-    Option.filter(Predicate.isString),
-    Option.orElse(() => Option.liftThrowable(() => globalThis.String(value))()),
-    Option.getOrElse(() => "[Unserializable value]"),
-  );
+    });
+    if (typeof result === "string") return result;
+  } catch {}
+
+  try {
+    return globalThis.String(value);
+  } catch {
+    return "[Unserializable value]";
+  }
 };
 
-export const normalizeException = (value: unknown, timestamp: DateTime.Utc): EventRequest => {
-  const formattedTimestamp = DateTime.formatIso(timestamp);
-  const error = Option.liftThrowable(() => (Predicate.isError(value) ? value : undefined))().pipe(
-    Option.getOrUndefined,
-  );
+export const normalizeException = (value: unknown, timestamp: Date): EventRequest => {
+  const formattedTimestamp = timestamp.toISOString();
+  let error: Error | undefined;
+
+  try {
+    error = value instanceof Error ? value : undefined;
+  } catch {
+    error = undefined;
+  }
 
   if (error === undefined) {
     return new EventRequest({

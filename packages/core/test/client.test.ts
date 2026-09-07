@@ -1,15 +1,28 @@
 import { assert, describe, it } from "@effect/vitest";
-import { Effect, Layer } from "effect";
-import { FetchHttpClient } from "effect/unstable/http";
 import { createClient } from "../src/index.js";
-import { layer, SupaCatch } from "../src/effect.js";
 import {
   CaptureTimeoutError,
+  InvalidConfigurationError,
   InvalidSuccessResponseError,
+  RejectedResponseError,
   TransportError,
   UnavailableResponseError,
+  UnexpectedResponseError,
 } from "../src/errors.js";
 import { accepted, eventId, listen, silent } from "../../../test/server.js";
+
+interface StatusErrorConstructor {
+  new (input: { readonly status: number }): Error & {
+    readonly status: number;
+  };
+}
+
+const statusErrors: ReadonlyArray<readonly [number, StatusErrorConstructor]> = [
+  [401, RejectedResponseError],
+  [403, RejectedResponseError],
+  [503, UnavailableResponseError],
+  [418, UnexpectedResponseError],
+];
 
 describe("captureException", () => {
   it("submits one Event and returns its Event ID", async () => {
@@ -31,47 +44,34 @@ describe("captureException", () => {
     }
   });
 
-  it("runs the same implementation through the Effect service", async () => {
-    const server = await listen(accepted);
-    try {
-      const result = await Effect.runPromise(
-        Effect.gen(function* () {
-          const supaCatch = yield* SupaCatch;
-          return yield* supaCatch.captureException("effect failure");
-        }).pipe(
-          Effect.provide(
-            layer({ endpoint: server.endpoint, ingestKey: "sck_test_key" }).pipe(
-              Layer.provide(FetchHttpClient.layer),
-            ),
-          ),
-        ),
-      );
-
-      assert.strictEqual(result, eventId);
-      assert.lengthOf(server.requests, 1);
-    } finally {
-      await server.close();
-    }
+  it("validates configuration when the client is created", () => {
+    assert.throws(
+      () => createClient({ endpoint: "ftp://ingest.example.test", ingestKey: "sck_test_key" }),
+      InvalidConfigurationError,
+    );
   });
 
-  it("does not retry unavailable responses", async () => {
-    const server = await listen((_request, response) => {
-      response.writeHead(503);
-      response.end();
-    });
-    try {
-      const client = createClient({ endpoint: server.endpoint, ingestKey: "sck_test_key" });
+  for (const [status, ErrorClass] of statusErrors) {
+    it(`maps status ${status} without retrying`, async () => {
+      const server = await listen((_request, response) => {
+        response.writeHead(status);
+        response.end();
+      });
       try {
-        await client.captureException("boom");
-        assert.fail("expected capture to fail");
-      } catch (error) {
-        assert.instanceOf(error, UnavailableResponseError);
+        const client = createClient({ endpoint: server.endpoint, ingestKey: "sck_test_key" });
+        try {
+          await client.captureException("boom");
+          assert.fail("expected capture to fail");
+        } catch (error) {
+          assert.instanceOf(error, ErrorClass);
+          assert.strictEqual(error.status, status);
+        }
+        assert.lengthOf(server.requests, 1);
+      } finally {
+        await server.close();
       }
-      assert.lengthOf(server.requests, 1);
-    } finally {
-      await server.close();
-    }
-  });
+    });
+  }
 
   it("rejects malformed accepted responses", async () => {
     const server = await listen((_request, response) => {
@@ -118,8 +118,29 @@ describe("captureException", () => {
         assert.fail("expected capture to time out");
       } catch (error) {
         assert.instanceOf(error, CaptureTimeoutError);
+        assert.strictEqual(error._tag, "CaptureTimeoutError");
+        assert.strictEqual(error.timeoutMillis, 20);
       }
       assert.lengthOf(server.requests, 1);
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("disposes idempotently and rejects later captures without sending a request", async () => {
+    const server = await listen(accepted);
+    try {
+      const client = createClient({ endpoint: server.endpoint, ingestKey: "sck_test_key" });
+      client.dispose();
+      client.dispose();
+
+      try {
+        await client.captureException("after dispose");
+        assert.fail("expected capture to fail");
+      } catch (error) {
+        assert.instanceOf(error, TransportError);
+      }
+      assert.lengthOf(server.requests, 0);
     } finally {
       await server.close();
     }

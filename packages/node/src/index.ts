@@ -1,5 +1,5 @@
 import type { SdkConfig, SupaCatchClient } from "@supainc/supacatch-core";
-import { initRuntime, runtimeLayer } from "@supainc/supacatch-core/adapter";
+import { initRuntime, runtimeLayer } from "@supainc/supacatch-effect/adapter";
 import { processFatalAdapter } from "./process-adapter.js";
 
 export const init = (config: SdkConfig): SupaCatchClient =>

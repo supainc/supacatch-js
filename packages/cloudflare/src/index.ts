@@ -4,7 +4,7 @@ import {
   once,
   runWithContext,
   type CaptureContext,
-} from "@supainc/supacatch-core/adapter";
+} from "@supainc/supacatch-effect/adapter";
 import { Effect, MutableRef, Option } from "effect";
 
 export interface CloudflareExecutionContext {

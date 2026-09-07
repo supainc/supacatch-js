@@ -1,6 +1,6 @@
-import { FatalAdapter, type FatalAdapterShape, installFatalCapture } from "../src/adapter.js";
 import { assert, describe, it } from "@effect/vitest";
 import { Effect } from "effect";
+import { FatalAdapter, type FatalAdapterShape, installFatalCapture } from "../src/adapter.js";
 
 const install = (
   capture: (value: unknown) => Promise<void>,
@@ -45,7 +45,7 @@ const makeAdapter = () => {
 
 describe("fatal capture registration", () => {
   it("captures only the first fatal value and delegates duplicate termination", async () => {
-    const harness = makeAdapter();
+    const fixture = makeAdapter();
     let resolveCapture: (() => void) | undefined;
     const captured: Array<unknown> = [];
     const dispose = install(
@@ -54,24 +54,24 @@ describe("fatal capture registration", () => {
           captured.push(value);
           resolveCapture = resolve;
         }),
-      harness.adapter,
+      fixture.adapter,
     );
 
-    assert.isTrue(harness.emit("first"));
-    assert.isFalse(harness.emit("second"));
+    assert.isTrue(fixture.emit("first"));
+    assert.isFalse(fixture.emit("second"));
     assert.deepStrictEqual(captured, ["first"]);
-    assert.deepStrictEqual(harness.firstFatals, ["first"]);
-    assert.deepStrictEqual(harness.duplicateFatals, ["second"]);
-    assert.deepStrictEqual(harness.finishedFatals, []);
+    assert.deepStrictEqual(fixture.firstFatals, ["first"]);
+    assert.deepStrictEqual(fixture.duplicateFatals, ["second"]);
+    assert.deepStrictEqual(fixture.finishedFatals, []);
 
     resolveCapture?.();
     await Promise.resolve();
-    assert.deepStrictEqual(harness.finishedFatals, ["first"]);
+    assert.deepStrictEqual(fixture.finishedFatals, ["first"]);
     dispose();
   });
 
   it("captures when the first-fatal side effect fails", async () => {
-    const harness = makeAdapter();
+    const fixture = makeAdapter();
     const captured: Array<unknown> = [];
     const dispose = install(
       (value) => {
@@ -79,17 +79,17 @@ describe("fatal capture registration", () => {
         return Promise.resolve();
       },
       {
-        ...harness.adapter,
+        ...fixture.adapter,
         onFirstFatal: () => {
           throw new Error("cannot report fatal");
         },
       },
     );
 
-    assert.isTrue(harness.emit("fatal"));
+    assert.isTrue(fixture.emit("fatal"));
     await Promise.resolve();
     assert.deepStrictEqual(captured, ["fatal"]);
-    assert.deepStrictEqual(harness.finishedFatals, ["fatal"]);
+    assert.deepStrictEqual(fixture.finishedFatals, ["fatal"]);
     dispose();
   });
 

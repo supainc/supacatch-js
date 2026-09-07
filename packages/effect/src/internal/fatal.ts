@@ -8,7 +8,7 @@ export interface FatalAdapterShape {
 }
 
 export class FatalAdapter extends Context.Service<FatalAdapter, FatalAdapterShape>()(
-  "@supainc/supacatch-core/internal/FatalAdapter",
+  "@supainc/supacatch-effect/internal/FatalAdapter",
 ) {}
 
 interface ActiveRegistration {
