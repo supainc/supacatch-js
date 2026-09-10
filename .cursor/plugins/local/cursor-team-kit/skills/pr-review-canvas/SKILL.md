@@ -25,7 +25,6 @@ gh api repos/{owner}/{repo}/pulls/{number}/comments --jq '.[] | {user: .user.log
 Read the diffs, understand the PR, and write the `<body>` content directly as HTML. You have full creative freedom -- the goal is to explain the PR clearly to a reviewer. Use whatever structure best fits the PR.
 
 **Typical structure** (adapt as needed):
-
 - Header with title, PR number, author, stats
 - Summary box explaining what the PR does in plain English
 - Core file sections with annotations and diffs
@@ -33,7 +32,6 @@ Read the diffs, understand the PR, and write the `<body>` content directly as HT
 - Review checklist at the bottom
 
 **But you can also add:**
-
 - **Pseudocode summaries** for verbose code -- show the algorithm in plain English or short pseudocode, with the real diff collapsed below (use a `.bp-section` card labeled "Show full implementation"). Great when 150 lines of retry/backoff/error-handling code is really just "fetch with exponential backoff and circuit breaker."
 - Diagrams (inline SVG, mermaid via CDN, ASCII art in `<pre>`)
 - Flowcharts showing before/after control flow
@@ -43,15 +41,11 @@ Read the diffs, understand the PR, and write the `<body>` content directly as HT
 - Anything else that makes the review clearer
 
 **Pseudocode pattern example:**
-
 ```html
 <div class="file-card">
   <div class="file-hdr" onclick="toggle(this)">
     <span class="fname">retryClient.ts</span>
-    <div class="fstats">
-      <span class="pill add">+173</span><span class="pill del">&minus;11</span
-      ><span class="chev open">&#9654;</span>
-    </div>
+    <div class="fstats"><span class="pill add">+173</span><span class="pill del">&minus;11</span><span class="chev open">&#9654;</span></div>
   </div>
   <div class="file-body open">
     <div class="file-note">
@@ -82,28 +76,28 @@ Read [styles.css](styles.css) and [renderer.js](renderer.js) from this skill dir
 
 **CSS classes you can use:**
 
-| Class                                   | Purpose                                                             |
-| --------------------------------------- | ------------------------------------------------------------------- |
-| `.header`, `.header h1`, `.header-meta` | Page header                                                         |
-| `.pill.add`, `.pill.del`, `.pill.files` | Stat badges (+N, -N, N files)                                       |
-| `.content`                              | Centered content wrapper (max 900px)                                |
-| `.summary`                              | Summary/TL;DR box                                                   |
-| `.section-title`                        | Section heading with bottom border                                  |
-| `.ic`                                   | Inline code reference (mono, blue, dark bg)                         |
+| Class | Purpose |
+|-------|---------|
+| `.header`, `.header h1`, `.header-meta` | Page header |
+| `.pill.add`, `.pill.del`, `.pill.files` | Stat badges (+N, -N, N files) |
+| `.content` | Centered content wrapper (max 900px) |
+| `.summary` | Summary/TL;DR box |
+| `.section-title` | Section heading with bottom border |
+| `.ic` | Inline code reference (mono, blue, dark bg) |
 | `.file-card`, `.file-hdr`, `.file-body` | Collapsible file card (use `onclick="toggle(this)"` on `.file-hdr`) |
-| `.file-note`                            | Sticky reviewer annotation inside a file card                       |
-| `.bp-section`, `.bp-hdr`, `.bp-body`    | Collapsed boilerplate card (use `onclick="toggleBP(this)"`)         |
-| `.bp-note`                              | Note inside a boilerplate card                                      |
-| `.verdict`                              | Review checklist box                                                |
+| `.file-note` | Sticky reviewer annotation inside a file card |
+| `.bp-section`, `.bp-hdr`, `.bp-body` | Collapsed boilerplate card (use `onclick="toggleBP(this)"`) |
+| `.bp-note` | Note inside a boilerplate card |
+| `.verdict` | Review checklist box |
 
 **JS functions available:**
 
-| Function                        | Usage                                                                                                                                                                                                                                                               |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `toggle(hdrElement)`            | Toggle a `.file-body` open/closed                                                                                                                                                                                                                                   |
-| `toggleBP(hdrElement)`          | Toggle a `.bp-body` open/closed                                                                                                                                                                                                                                     |
+| Function | Usage |
+|----------|-------|
+| `toggle(hdrElement)` | Toggle a `.file-body` open/closed |
+| `toggleBP(hdrElement)` | Toggle a `.bp-body` open/closed |
 | `renderDiff(target, diffInput)` | Render a unified diff. `target` can be a DOM element, string ID, or CSS selector. `diffInput` can be a raw patch string OR an array of lines -- both work. Automatically filters imports, collapses whitespace-only changes, detects moved code (blue/purple tint). |
-| `esc(string)`                   | HTML-escape a string                                                                                                                                                                                                                                                |
+| `esc(string)` | HTML-escape a string |
 
 **Rendering diffs -- use `data-diff` attributes with auto-discovery.**
 Put `<div data-diff="KEY"></div>` placeholders in your body HTML wherever you want a diff rendered. The renderer finds them automatically after DOM load and fills them from the `<script id="pr-diffs-json" type="application/json">` element in `template.html`.
@@ -111,7 +105,6 @@ Put `<div data-diff="KEY"></div>` placeholders in your body HTML wherever you wa
 **CRITICAL: Patch strings can contain `</script>` in addition to newlines, backslashes, and quotes.** Even `json.dumps(...)` is not enough if you paste raw output into executable `<script>` because HTML parsing can terminate the tag early. Never manually embed patch strings in JS/JSON. Instead, use this safe approach:
 
 1. During the fetch step, save patches to a JSON file using `jq` (which handles escaping correctly):
-
 ```bash
 gh api repos/{owner}/{repo}/pulls/{number}/files --paginate \
   --jq '[.[] | {key: (.filename | gsub("[^a-zA-Z0-9]"; "_")), value: (.patch // "")}] | from_entries' \
@@ -119,7 +112,6 @@ gh api repos/{owner}/{repo}/pulls/{number}/files --paginate \
 ```
 
 2. During assembly, use Python to safely inject the JSON into `template.html`:
-
 ```bash
 python3 <<'PY'
 import json
@@ -148,7 +140,6 @@ PY
 This guarantees valid JSON and script-safe HTML embedding. The agent writes body HTML to a temp file, then Python assembles everything safely.
 
 The diff data keys should match the `data-diff` attribute values in the HTML:
-
 ```html
 <div data-diff="path_to_file_ts"></div>
 ```
@@ -163,11 +154,9 @@ Since renderer.js loads in `<head>`, you can also call `renderDiff(target, lines
 2. Save patches to `/tmp/pr-patches-{number}.json` using the `jq` command from step 3 above
 3. Run the Python assembly script from step 3 above (reads styles.css, renderer.js, template.html from this skill directory, injects body + patches safely, writes final HTML)
 4. Start a local server on a fixed port:
-
    ```bash
    cd /tmp && python3 -m http.server 8432 --bind 127.0.0.1
    ```
-
    Run this backgrounded, then navigate the in-app browser to `http://127.0.0.1:8432/pr-review-{number}.html`.
 
    **Why a fixed port and `cd /tmp`:** Background shells have no TTY, so Python buffers its startup message ("Serving HTTP on...") indefinitely — using port 0 means you can never read which port was chosen. And `--directory /tmp` works but `cd /tmp` is more robust across Python versions. If port 8432 is taken, try 8433, 8434, etc.

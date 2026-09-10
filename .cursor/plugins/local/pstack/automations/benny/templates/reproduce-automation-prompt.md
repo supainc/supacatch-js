@@ -14,9 +14,9 @@ Trigger:
 
 ```json
 {
-  "source_channel_id": "{{SLACK_CHANNEL_ID}}",
-  "message_ts": "{{SLACK_MESSAGE_TS}}",
-  "thread_ts": "{{SLACK_THREAD_TS_OR_EMPTY}}"
+	"source_channel_id": "{{SLACK_CHANNEL_ID}}",
+	"message_ts": "{{SLACK_MESSAGE_TS}}",
+	"thread_ts": "{{SLACK_THREAD_TS_OR_EMPTY}}"
 }
 ```
 

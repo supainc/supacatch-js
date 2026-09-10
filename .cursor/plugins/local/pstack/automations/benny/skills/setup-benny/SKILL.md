@@ -37,9 +37,9 @@ Merge this entry into the existing JSON or JSONC:
 
 ```json
 {
-  "plugins": {
-    "pstack": { "enabled": true }
-  }
+	"plugins": {
+		"pstack": { "enabled": true }
+	}
 }
 ```
 
