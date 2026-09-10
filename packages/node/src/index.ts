@@ -18,6 +18,7 @@ export {
   UnavailableResponseError,
   UnexpectedResponseError,
   type CaptureError,
+  EventEnvironment,
   EventId,
   EventRequest,
   SubmitEventResponse,

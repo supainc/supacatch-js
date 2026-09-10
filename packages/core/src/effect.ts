@@ -30,4 +30,4 @@ export const layer = (
 
 export type { SdkConfig } from "./config.js";
 export * from "./errors.js";
-export { EventId, EventRequest, SubmitEventResponse } from "./event.js";
+export { EventEnvironment, EventId, EventRequest, SubmitEventResponse } from "./event.js";

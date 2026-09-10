@@ -24,6 +24,27 @@ describe("configuration", () => {
     );
     assert.strictEqual(Duration.toMillis(config.requestTimeout), 5_000);
     assert.strictEqual(Redacted.value(config.ingestKey), "sck_12345678");
+    assert.strictEqual(config.environment, undefined);
+  });
+
+  it("retains a configured Environment", () => {
+    const config = Effect.runSync(
+      resolveConfig({
+        ingestKey: "sck_12345678",
+        environment: "staging",
+      }),
+    );
+
+    assert.strictEqual(config.environment, "staging");
+  });
+
+  it("rejects an invalid Environment", () => {
+    try {
+      Effect.runSync(resolveConfig({ ingestKey: "sck_12345678", environment: "review/123" }));
+      assert.fail("expected configuration validation to fail");
+    } catch (error) {
+      assert.instanceOf(error, InvalidConfigurationError);
+    }
   });
 
   it("rejects invalid configuration without exposing the key", () => {

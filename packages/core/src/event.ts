@@ -3,6 +3,16 @@ import { DateTime, Option, Predicate, Schema } from "effect";
 export const EventId = Schema.String.pipe(Schema.check(Schema.isUUID(7)), Schema.brand("EventId"));
 export type EventId = typeof EventId.Type;
 
+export const EventEnvironment = Schema.NonEmptyString.pipe(
+  Schema.check(Schema.isMaxLength(64)),
+  Schema.check(Schema.isPattern(/^[^\s/]+$/)),
+  Schema.check(
+    Schema.makeFilter((value) => (value === "None" ? "environment cannot be None" : true)),
+  ),
+  Schema.brand("EventEnvironment"),
+);
+export type EventEnvironment = typeof EventEnvironment.Type;
+
 const EventTimestamp = Schema.String.pipe(
   Schema.check(Schema.isPattern(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/)),
 );
@@ -13,6 +23,7 @@ export class EventRequest extends Schema.Class<EventRequest>("EventRequest")({
   stackTrace: Schema.optional(
     Schema.NullOr(Schema.String.pipe(Schema.check(Schema.isMaxLength(70_000)))),
   ),
+  environment: Schema.optional(EventEnvironment),
   timestamp: EventTimestamp,
 }) {}
 

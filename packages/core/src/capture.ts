@@ -18,7 +18,11 @@ export const captureWith = Effect.fn("SupaCatch.captureException")(function* (
   value: unknown,
 ) {
   const now = yield* DateTime.now;
-  const payload = normalizeException(value, now);
+  const event = normalizeException(value, now);
+  const payload =
+    config.environment === undefined
+      ? event
+      : new EventRequest({ ...event, environment: config.environment });
 
   const eventUrl = new URL(config.endpoint);
   eventUrl.pathname = `${Str.replace(/\/$/, "")(eventUrl.pathname)}/v1/events`;
