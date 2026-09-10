@@ -23,7 +23,6 @@ jobs:
       - run: bun run check
       - name: Publish packages
         run: |
-          unset NODE_AUTH_TOKEN
           for package in \
             packages/core \
             packages/node \
@@ -36,6 +35,7 @@ jobs:
             if npm view "$name@$version" version >/dev/null 2>&1; then
               echo "$name@$version is already published"
             else
-              npm publish "./$package" --provenance --access public --tag alpha
+              # npm discards the reason a trusted-publishing exchange failed unless it is verbose.
+              npm publish "./$package" --provenance --access public --tag alpha --loglevel verbose
             fi
           done

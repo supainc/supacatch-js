@@ -11,9 +11,11 @@ Published packages live in `packages/`. Put shared capture behavior in `packages
 
 Bump every workspace package to the same version, including internal `@supainc/supacatch-*` dependency pins and `bun.lock`. Merge that change to `main`, then dispatch `.github/workflows/release.yml`.
 
-Publish uses npm trusted publishing (GitHub Actions OIDC), not a long-lived npm token. `actions/setup-node`'s `registry-url` input is omitted on purpose: it writes `always-auth` and a dummy `NODE_AUTH_TOKEN` that makes `npm publish` skip OIDC and fail with `E404`.
+Publish uses npm trusted publishing (GitHub Actions OIDC). There is no npm token: the job authenticates only if npm can exchange its OIDC token for a publish credential. npm ignores a failed exchange and falls back to whatever credentials it finds, so a missing or mismatched trusted publisher surfaces as `ENEEDAUTH`, or as `E404` while `actions/setup-node` writes a placeholder `NODE_AUTH_TOKEN` (which is why `registry-url` is omitted).
 
-Each published package needs a GitHub Actions trusted publisher on npmjs.com (Package settings → Trusted publishing) with:
+Trusted publishers are per package name, and npm cannot configure one for a name that does not exist yet. A brand-new package needs one manual `npm publish` from a maintainer account first; every later version then publishes from CI.
+
+Each published package needs its own GitHub Actions trusted publisher on npmjs.com (Package settings → Trusted publishing) with:
 
 - Organization or user: `supainc`
 - Repository: `supacatch-js`
