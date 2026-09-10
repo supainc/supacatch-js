@@ -26,6 +26,23 @@ describe("captureException", () => {
       assert.strictEqual(server.requests[0]?.authorization, "Bearer sck_test_key");
       assert.strictEqual(server.requests[0]?.url, "/base/v1/events");
       assert.include(server.requests[0]?.body ?? "", '"message":"boom"');
+      assert.notInclude(server.requests[0]?.body ?? "", '"environment"');
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("submits the configured Environment with the Event", async () => {
+    const server = await listen(accepted);
+    try {
+      const client = createClient({
+        endpoint: server.endpoint,
+        ingestKey: "sck_test_key",
+        environment: "staging",
+      });
+      await client.captureException(new Error("boom"));
+
+      assert.include(server.requests[0]?.body ?? "", '"environment":"staging"');
     } finally {
       await server.close();
     }

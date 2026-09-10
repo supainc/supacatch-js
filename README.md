@@ -38,7 +38,7 @@ import * as SupaCatch from "@supainc/supacatch-node";
 const ingestKey = process.env.SUPACATCH_INGEST_KEY;
 if (!ingestKey) throw new Error("SUPACATCH_INGEST_KEY is required");
 
-const supaCatch = SupaCatch.init({ ingestKey });
+const supaCatch = SupaCatch.init({ ingestKey, environment: "production" });
 ```
 
 ### Bun
@@ -49,7 +49,7 @@ import * as SupaCatch from "@supainc/supacatch-bun";
 const ingestKey = Bun.env.SUPACATCH_INGEST_KEY;
 if (!ingestKey) throw new Error("SUPACATCH_INGEST_KEY is required");
 
-const supaCatch = SupaCatch.init({ ingestKey });
+const supaCatch = SupaCatch.init({ ingestKey, environment: "production" });
 ```
 
 ### Cloudflare Workers
@@ -63,11 +63,14 @@ interface Env {
   SUPACATCH_INGEST_KEY: string;
 }
 
-export default SupaCatch.withCatch((env: Env) => ({ ingestKey: env.SUPACATCH_INGEST_KEY }), {
-  async fetch(request) {
-    return new Response(`Requested ${new URL(request.url).pathname}`);
+export default SupaCatch.withCatch(
+  (env: Env) => ({ ingestKey: env.SUPACATCH_INGEST_KEY, environment: "production" }),
+  {
+    async fetch(request) {
+      return new Response(`Requested ${new URL(request.url).pathname}`);
+    },
   },
-});
+);
 ```
 
 When the handler throws or rejects, the wrapper attempts delivery for at most two seconds and then rethrows the original value. Capture failures never replace the Worker exception. The wrapper catches only failures that propagate through the `fetch` handler; module initialization failures, detached tasks, and platform terminations require a Tail Worker.
@@ -103,7 +106,7 @@ import handler, { createServerEntry } from "@tanstack/react-start/server-entry";
 const ingestKey = process.env.SUPACATCH_INGEST_KEY;
 if (!ingestKey) throw new Error("SUPACATCH_INGEST_KEY is required");
 
-SupaCatch.init({ ingestKey });
+SupaCatch.init({ ingestKey, environment: "production" });
 
 export default createServerEntry(
   withSupaCatch({
@@ -122,11 +125,14 @@ import { withSupaCatch } from "@supainc/supacatch-tanstack-start";
 import handler from "@tanstack/react-start/server-entry";
 import type { Env } from "./worker";
 
-export default withSupaCatch((env: Env) => ({ ingestKey: env.SUPACATCH_INGEST_KEY }), {
-  fetch(request: Request) {
-    return handler.fetch(request);
+export default withSupaCatch(
+  (env: Env) => ({ ingestKey: env.SUPACATCH_INGEST_KEY, environment: "production" }),
+  {
+    fetch(request: Request) {
+      return handler.fetch(request);
+    },
   },
-});
+);
 ```
 
 The adapter waits for each Event submission before rethrowing the original failure. The client's `requestTimeout` therefore bounds the added failure-path latency. Capture failures never replace application failures, and the same `Error` passing through nested adapter layers is submitted once.
@@ -139,10 +145,13 @@ The SDK sends Events to `https://ingest.catch.supa.dev` by default. For Node.js 
 const supaCatch = SupaCatch.init({
   endpoint: "https://your-ingest.example.com",
   ingestKey,
+  environment: "staging",
 });
 ```
 
-For Cloudflare Workers, return the same `endpoint` option from the configuration function passed to `withSupaCatch` or `SupaCatch.withCatch`.
+`environment` tags every Event this client submits. Names must be non-empty, at most 64 characters, without whitespace or `/`, and cannot be `None`. If you omit it, ingest stores `production`.
+
+For Cloudflare Workers, return the same `endpoint` and `environment` options from the configuration function passed to `withSupaCatch` or `SupaCatch.withCatch`.
 
 Fatal capture waits for delivery for at most two seconds and then preserves fatal termination. Call `SupaCatch.init` inside every worker or isolate that should capture failures.
 
@@ -164,6 +173,7 @@ if (!ingestKey) throw new Error("SUPACATCH_INGEST_KEY is required");
 
 const supaCatch = createClient({
   ingestKey,
+  environment: "production",
   requestTimeout: 5_000,
 });
 
@@ -216,7 +226,7 @@ The adapter entry exports runtime initialization, automatic capture registration
 
 ## Privacy and delivery semantics
 
-SupaCatch sends exception names, messages, raw stack strings, and capture timestamps. This release has no redaction hook or source-map processing. Never place an Ingest Key in logs, client-side bundles, or public configuration.
+SupaCatch sends exception names, messages, raw stack strings, capture timestamps, and the configured environment. This release has no redaction hook or source-map processing. Never place an Ingest Key in logs, client-side bundles, or public configuration.
 
 A successful capture means the ingest endpoint accepted the Event into its queue. It does not mean downstream grouping or storage has completed.
 

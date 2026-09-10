@@ -1,5 +1,6 @@
 import { Duration, Effect, Schema } from "effect";
 import { InvalidConfigurationError } from "./errors.js";
+import { EventEnvironment } from "./event.js";
 
 const Config = Schema.Struct({
   endpoint: Schema.URLFromString.pipe(
@@ -13,6 +14,7 @@ const Config = Schema.Struct({
     Schema.withDecodingDefault(Effect.succeed("https://ingest.catch.supa.dev")),
   ),
   ingestKey: Schema.RedactedFromValue(Schema.String.pipe(Schema.check(Schema.isMinLength(8)))),
+  environment: Schema.optional(EventEnvironment),
   requestTimeout: Schema.DurationFromMillis.pipe(
     Schema.check(
       Schema.makeFilter((requestTimeout) =>

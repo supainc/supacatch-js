@@ -1,9 +1,24 @@
 import { assert, describe, it } from "@effect/vitest";
-import { DateTime } from "effect";
+import { DateTime, Schema } from "effect";
 import { FastCheck } from "effect/testing";
-import { normalizeException } from "../src/event.js";
+import { EventEnvironment, normalizeException } from "../src/event.js";
 
 const timestamp = DateTime.makeUnsafe("2026-01-02T03:04:05.000Z");
+
+describe("EventEnvironment", () => {
+  it("accepts Sentry-compatible names", () => {
+    assert.isTrue(Schema.is(EventEnvironment)("production"));
+    assert.isTrue(Schema.is(EventEnvironment)("preview-123"));
+  });
+
+  it("rejects reserved and unsupported names", () => {
+    assert.isFalse(Schema.is(EventEnvironment)(""));
+    assert.isFalse(Schema.is(EventEnvironment)("None"));
+    assert.isFalse(Schema.is(EventEnvironment)("preview branch"));
+    assert.isFalse(Schema.is(EventEnvironment)("review/123"));
+    assert.isFalse(Schema.is(EventEnvironment)("a".repeat(65)));
+  });
+});
 
 describe("normalizeException", () => {
   it("normalizes Error values", () => {
