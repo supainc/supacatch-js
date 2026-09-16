@@ -5,6 +5,10 @@
 3. Run `bun run check` before requesting review.
 4. Add tests for behavior changes.
 
+## Cursor plugins
+
+The plugins in `.cursor/plugins/local/` are vendored for review, not loaded from there: Cursor only discovers local plugins in `~/.cursor/plugins/local/`. Run `bash .cursor/scripts/install-local-plugins.sh` to copy them into place, then reload the window. Cloud Agents never load local plugins, so a skill that has to work there belongs in `.cursor/skills/`.
+
 Published packages live in `packages/`. Put shared capture behavior in `packages/core`. Put runtime and framework behavior in the package that owns that integration.
 
 ## Release
