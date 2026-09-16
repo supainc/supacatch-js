@@ -14,10 +14,17 @@ const fatalDeliveryDeadline = 2_000;
 let activeGlobalHandlerRegistration: ActiveRegistration | undefined;
 
 export const beforeFatal = async (capture: Promise<unknown>): Promise<void> => {
-  await Promise.race([
-    capture.catch(() => undefined),
-    new Promise<void>((resolve) => setTimeout(resolve, fatalDeliveryDeadline)),
-  ]);
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  try {
+    await Promise.race([
+      capture.catch(() => undefined),
+      new Promise<void>((resolve) => {
+        timeout = setTimeout(resolve, fatalDeliveryDeadline);
+      }),
+    ]);
+  } finally {
+    clearTimeout(timeout);
+  }
 };
 
 export const installFatalCapture = (

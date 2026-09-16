@@ -15,7 +15,7 @@ export class SupaCatch extends Context.Service<
 >()("@supainc/supacatch-effect/SupaCatch") {}
 
 export const layer = (config: SdkConfig): Layer.Layer<SupaCatch, InvalidConfigurationError> =>
-  Layer.scoped(
+  Layer.effect(
     SupaCatch,
     Effect.acquireRelease(
       Effect.try({

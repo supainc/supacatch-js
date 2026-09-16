@@ -68,12 +68,12 @@ export const captureWith = async (
   } catch (cause) {
     throw new InvalidSuccessResponseError({ cause });
   }
-  if (
-    typeof accepted !== "object" ||
-    accepted === null ||
-    !isEventId(Reflect.get(accepted, "eventId"))
-  ) {
+  if (typeof accepted !== "object" || accepted === null) {
     throw new InvalidSuccessResponseError({ cause: accepted });
   }
-  return accepted.eventId;
+  const acceptedEventId = Reflect.get(accepted, "eventId");
+  if (!isEventId(acceptedEventId)) {
+    throw new InvalidSuccessResponseError({ cause: accepted });
+  }
+  return acceptedEventId;
 };

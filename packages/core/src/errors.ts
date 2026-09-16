@@ -11,7 +11,7 @@ export class InvalidConfigurationError extends Error {
 
 export class RequestEncodingError extends Error {
   readonly _tag = "RequestEncodingError";
-  readonly cause: unknown;
+  override readonly cause: unknown;
 
   constructor({ cause }: { readonly cause: unknown }) {
     super("The SupaCatch event could not be encoded");
@@ -22,7 +22,7 @@ export class RequestEncodingError extends Error {
 
 export class TransportError extends Error {
   readonly _tag = "TransportError";
-  readonly cause: unknown;
+  override readonly cause: unknown;
 
   constructor({ cause }: { readonly cause: unknown }) {
     super("The SupaCatch event could not be sent");
@@ -77,7 +77,7 @@ export class UnexpectedResponseError extends Error {
 
 export class InvalidSuccessResponseError extends Error {
   readonly _tag = "InvalidSuccessResponseError";
-  readonly cause: unknown;
+  override readonly cause: unknown;
 
   constructor({ cause }: { readonly cause: unknown }) {
     super("SupaCatch returned an invalid success response");
