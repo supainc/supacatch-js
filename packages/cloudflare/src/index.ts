@@ -1,3 +1,4 @@
+import { appendFileSync } from "node:fs";
 import { createClient, type SdkConfig, type SupaCatchClient } from "@supainc/supacatch-core";
 import {
   beforeFatal,
@@ -39,9 +40,38 @@ export const withCatch = <Env, Worker extends CloudflareWorker<Env> = Cloudflare
         Promise.resolve(worker.fetch(request, env, context)),
       );
     } catch (error) {
-      await beforeFatal(once(error, captureContext, capture(error)));
+      // #region agent log
+      appendFileSync(
+        "/opt/cursor/logs/debug.log",
+        JSON.stringify({
+          location: "cloudflare/index.ts:withCatch:catch",
+          message: "withCatch catch; passing lazy () => capture(error) to once()",
+          data: {
+            errorMessage: error instanceof Error ? error.message : typeof error,
+            clientInitialized: client !== undefined,
+          },
+          timestamp: Date.now(),
+          hypothesisId: "A",
+          runId: "post-fix",
+        }) + "\n",
+      );
+      // #endregion
+      await beforeFatal(once(error, captureContext, () => capture(error)));
       throw error;
     } finally {
+      // #region agent log
+      appendFileSync(
+        "/opt/cursor/logs/debug.log",
+        JSON.stringify({
+          location: "cloudflare/index.ts:withCatch:finally",
+          message: "dispose may abort in-flight/abandoned capture Promises",
+          data: { willDispose: client !== undefined },
+          timestamp: Date.now(),
+          hypothesisId: "B",
+          runId: "post-fix",
+        }) + "\n",
+      );
+      // #endregion
       client?.dispose();
     }
   },
