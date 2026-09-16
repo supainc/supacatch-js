@@ -1,7 +1,1 @@
-{
-  "plugins": {
-    "pstack": {
-      "enabled": true
-    }
-  }
-}
+{}
