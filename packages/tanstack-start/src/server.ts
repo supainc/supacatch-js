@@ -1,7 +1,6 @@
 import type { SdkConfig } from "@supainc/supacatch-core";
 import { captureAutomatic } from "@supainc/supacatch-core/adapter";
 import { withCatch, type CloudflareWorker } from "@supainc/supacatch-cloudflare";
-import { Effect } from "effect";
 import type {
   SupaCatchFunctionMiddleware,
   SupaCatchRequestMiddleware,
@@ -12,8 +11,13 @@ type MiddlewareContext = {
   readonly next: () => unknown;
 };
 
-const captureException = (value: unknown): Promise<void> =>
-  Effect.runPromise(captureAutomatic(value).pipe(Effect.ignoreCause));
+const captureException = async (value: unknown): Promise<void> => {
+  try {
+    await captureAutomatic(value);
+  } catch {
+    return;
+  }
+};
 
 const captureMiddlewareException = async ({ next }: MiddlewareContext): Promise<unknown> => {
   try {

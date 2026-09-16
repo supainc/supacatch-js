@@ -8,7 +8,8 @@ Official SupaCatch SDKs for server-side JavaScript. This repository uses a Bun w
 
 | Package                             | Purpose                                      |
 | ----------------------------------- | -------------------------------------------- |
-| `@supainc/supacatch-core`           | Shared client and Effect service             |
+| `@supainc/supacatch-core`           | Shared Promise client                        |
+| `@supainc/supacatch-effect`         | Opt-in Effect service                        |
 | `@supainc/supacatch-node`           | Node.js automatic capture                    |
 | `@supainc/supacatch-bun`            | Bun automatic capture                        |
 | `@supainc/supacatch-cloudflare`     | Cloudflare Worker wrapper                    |
@@ -184,10 +185,16 @@ const eventId = await supaCatch.captureException(new Error("Example failure"));
 
 ## Effect
 
+Install the opt-in Effect integration. Runtime packages and `core` do not install or constrain
+Effect.
+
+```sh
+npm install @supainc/supacatch-effect@alpha effect
+```
+
 ```ts
-import { Effect, Layer } from "effect";
-import { FetchHttpClient } from "effect/unstable/http";
-import { layer, SupaCatch } from "@supainc/supacatch-core/effect";
+import { layer, SupaCatch } from "@supainc/supacatch-effect";
+import { Effect } from "effect";
 
 const ingestKey = process.env.SUPACATCH_INGEST_KEY;
 if (!ingestKey) throw new Error("SUPACATCH_INGEST_KEY is required");
@@ -195,28 +202,10 @@ if (!ingestKey) throw new Error("SUPACATCH_INGEST_KEY is required");
 const program = Effect.gen(function* () {
   const supaCatch = yield* SupaCatch;
   return yield* supaCatch.captureException(new Error("Example failure"));
-}).pipe(Effect.provide(layer({ ingestKey }).pipe(Layer.provide(FetchHttpClient.layer))));
+}).pipe(Effect.provide(layer({ ingestKey })));
 ```
 
 Expected failures remain typed in the Effect error channel and reject Promise calls as the corresponding public error instances.
-
-Use the runtime Layer when an Effect application also wants automatic capture:
-
-```ts
-import { Effect } from "effect";
-import { SupaCatch } from "@supainc/supacatch-core/effect";
-import { layer } from "@supainc/supacatch-node";
-
-const program = Effect.gen(function* () {
-  const supaCatch = yield* SupaCatch;
-  yield* supaCatch.captureException("manual capture still uses the same client");
-  yield* Effect.never;
-}).pipe(Effect.provide(layer({ ingestKey })));
-
-await Effect.runPromise(program);
-```
-
-The runtime Layer removes its global handlers and TanStack automatic capture registration when its scope closes.
 
 ## Runtime adapters
 

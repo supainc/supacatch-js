@@ -1,12 +1,12 @@
 {
-  "name": "@supainc/supacatch-tanstack-start",
+  "name": "@supainc/supacatch-effect",
   "version": "0.1.0-alpha.7",
-  "description": "SupaCatch SDK for TanStack Start",
+  "description": "Effect integration for the SupaCatch JavaScript SDK",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/supainc/supacatch-js.git",
-    "directory": "packages/tanstack-start"
+    "directory": "packages/effect"
   },
   "files": [
     "dist"
@@ -15,13 +15,8 @@
   "sideEffects": false,
   "exports": {
     ".": {
-      "types": "./dist/server.d.ts",
-      "workerd": "./dist/server.js",
-      "worker": "./dist/server.js",
-      "browser": "./dist/client.js",
-      "node": "./dist/server.js",
-      "bun": "./dist/server.js",
-      "import": "./dist/server.js"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     },
     "./package.json": "./package.json"
   },
@@ -34,8 +29,10 @@
     "publint": "publint"
   },
   "dependencies": {
-    "@supainc/supacatch-cloudflare": "0.1.0-alpha.7",
     "@supainc/supacatch-core": "0.1.0-alpha.7"
+  },
+  "peerDependencies": {
+    "effect": "^4.0.0-beta.103"
   },
   "engines": {
     "node": ">=20.19.0"

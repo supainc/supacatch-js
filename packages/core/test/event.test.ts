@@ -1,22 +1,21 @@
 import { assert, describe, it } from "@effect/vitest";
-import { DateTime, Schema } from "effect";
 import { FastCheck } from "effect/testing";
-import { EventEnvironment, normalizeException } from "../src/event.js";
+import { isEventEnvironment, normalizeException } from "../src/event.js";
 
-const timestamp = DateTime.makeUnsafe("2026-01-02T03:04:05.000Z");
+const timestamp = new Date("2026-01-02T03:04:05.000Z");
 
 describe("EventEnvironment", () => {
   it("accepts Sentry-compatible names", () => {
-    assert.isTrue(Schema.is(EventEnvironment)("production"));
-    assert.isTrue(Schema.is(EventEnvironment)("preview-123"));
+    assert.isTrue(isEventEnvironment("production"));
+    assert.isTrue(isEventEnvironment("preview-123"));
   });
 
   it("rejects reserved and unsupported names", () => {
-    assert.isFalse(Schema.is(EventEnvironment)(""));
-    assert.isFalse(Schema.is(EventEnvironment)("None"));
-    assert.isFalse(Schema.is(EventEnvironment)("preview branch"));
-    assert.isFalse(Schema.is(EventEnvironment)("review/123"));
-    assert.isFalse(Schema.is(EventEnvironment)("a".repeat(65)));
+    assert.isFalse(isEventEnvironment(""));
+    assert.isFalse(isEventEnvironment("None"));
+    assert.isFalse(isEventEnvironment("preview branch"));
+    assert.isFalse(isEventEnvironment("review/123"));
+    assert.isFalse(isEventEnvironment("a".repeat(65)));
   });
 });
 
@@ -30,7 +29,7 @@ describe("normalizeException", () => {
     assert.strictEqual(event.name, "TypeError");
     assert.strictEqual(event.message, "boom");
     assert.strictEqual(event.stackTrace, error.stack);
-    assert.strictEqual(event.timestamp, DateTime.formatIso(timestamp));
+    assert.strictEqual(event.timestamp, timestamp.toISOString());
   });
 
   it("normalizes cyclic non-Error values", () => {

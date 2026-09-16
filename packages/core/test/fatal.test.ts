@@ -1,12 +1,10 @@
-import { FatalAdapter, type FatalAdapterShape, installFatalCapture } from "../src/adapter.js";
+import { type FatalAdapterShape, installFatalCapture } from "../src/adapter.js";
 import { assert, describe, it } from "@effect/vitest";
-import { Effect } from "effect";
 
 const install = (
   capture: (value: unknown) => Promise<void>,
   adapter: FatalAdapterShape,
-): (() => void) =>
-  Effect.runSync(installFatalCapture(capture).pipe(Effect.provideService(FatalAdapter, adapter)));
+): (() => void) => installFatalCapture(capture, adapter);
 
 const makeAdapter = () => {
   let onFatal: ((value: unknown) => boolean) | undefined;

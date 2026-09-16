@@ -1,9 +1,11 @@
 # `@supainc/supacatch-core`
 
-Shared client and Effect service for the SupaCatch JavaScript SDKs.
+Shared Promise client for the SupaCatch JavaScript SDKs.
 
 ```sh
 npm install @supainc/supacatch-core@alpha
 ```
+
+For an Effect service and Layer, install `@supainc/supacatch-effect`.
 
 See the [SupaCatch JavaScript SDK documentation](https://github.com/supainc/supacatch-js#readme) for usage.
