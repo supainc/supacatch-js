@@ -17,11 +17,25 @@ const resolveMiddleware = (conditions: ReadonlyArray<string>): string =>
   );
 
 describe("TanStack Start package exports", () => {
-  it("resolves browser builds to the no-op implementation", () => {
+  it("resolves browser builds to the client implementation", () => {
     assert.strictEqual(resolveMiddleware(["browser"]), "undefined");
   });
 
   it("resolves Node builds to the server implementation", () => {
     assert.include(resolveMiddleware([]), "function");
+  });
+
+  it("resolves browser init to a function", () => {
+    const kind = execFileSync(
+      "node",
+      [
+        "--input-type=module",
+        "--conditions=browser",
+        "--eval",
+        'const { init } = await import("@supainc/supacatch-tanstack-start"); process.stdout.write(typeof init)',
+      ],
+      { cwd: packageRoot, encoding: "utf8" },
+    );
+    assert.strictEqual(kind, "function");
   });
 });

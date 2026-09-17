@@ -74,6 +74,7 @@
       "name": "@supainc/supacatch-tanstack-start",
       "version": "0.1.0-alpha.7",
       "dependencies": {
+        "@supainc/supacatch-browser": "0.1.0-alpha.7",
         "@supainc/supacatch-cloudflare": "0.1.0-alpha.7",
         "@supainc/supacatch-core": "0.1.0-alpha.7",
         "effect": "4.0.0-beta.103",

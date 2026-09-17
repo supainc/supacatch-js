@@ -1,6 +1,6 @@
 # `@supainc/supacatch-tanstack-start`
 
-Error capture middleware and server wrappers for TanStack Start.
+Error capture for TanStack Start on the server and in the browser.
 
 ```sh
 npm install @supainc/supacatch-tanstack-start@alpha

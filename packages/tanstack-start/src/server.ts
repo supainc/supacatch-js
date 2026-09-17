@@ -1,5 +1,5 @@
-import type { SdkConfig } from "@supainc/supacatch-core";
-import { captureAutomatic } from "@supainc/supacatch-core/adapter";
+import { createClient, type SdkConfig, type SupaCatchClient } from "@supainc/supacatch-core";
+import { captureAutomatic, registerAutomatic } from "@supainc/supacatch-core/adapter";
 import { withCatch, type CloudflareWorker } from "@supainc/supacatch-cloudflare";
 import { Effect } from "effect";
 import type {
@@ -68,6 +68,26 @@ export function withSupaCatch<Env, Entry extends TanStackServerEntry>(
   return withCatch(config, wrapServerEntry(serverEntry));
 }
 
+/**
+ * Registers the capture client used by TanStack server middleware.
+ * Prefer `@supainc/supacatch-node` or `@supainc/supacatch-bun` `init` when you also want
+ * process-level `uncaughtException` / `unhandledRejection` handlers.
+ */
+export const init = (config: SdkConfig): SupaCatchClient => {
+  const client = createClient(config);
+  const deactivateClient = registerAutomatic((value) =>
+    Effect.tryPromise(() => client.captureException(value)),
+  );
+  return {
+    captureException: client.captureException,
+    dispose: () => {
+      deactivateClient();
+      client.dispose();
+    },
+  };
+};
+
+export type { SdkConfig, SupaCatchClient } from "@supainc/supacatch-core";
 export type {
   SupaCatchFunctionMiddleware,
   SupaCatchRequestMiddleware,
