@@ -233,7 +233,7 @@ The adapter entry exports runtime initialization, automatic capture registration
 
 ## Privacy and delivery semantics
 
-SupaCatch sends exception names, messages, raw stack strings, capture timestamps, and the configured environment. This release has no redaction hook or source-map processing. The Ingest Key is public and may appear in browser bundles; still avoid pasting it into bug reports when a rotation is easier.
+SupaCatch sends exception names, messages, raw stack strings, capture timestamps, and the configured environment. This release has no redaction hook or source-map processing. The Ingest Key is public and may appear in browser bundles.
 
 A successful capture means the ingest endpoint accepted the Event into its queue. It does not mean downstream grouping or storage has completed.
 
