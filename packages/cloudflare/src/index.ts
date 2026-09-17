@@ -5,6 +5,7 @@ import {
   runWithContext,
   type CaptureContext,
 } from "@supainc/supacatch-core/adapter";
+import { Effect, MutableRef, Option } from "effect";
 
 export interface CloudflareExecutionContext {
   readonly waitUntil: (promise: Promise<unknown>) => void;
@@ -26,24 +27,34 @@ export const withCatch = <Env, Worker extends CloudflareWorker<Env> = Cloudflare
   worker: Worker,
 ): Omit<Worker, "fetch"> & CloudflareWorker<Env> => ({
   ...worker,
-  fetch: async (request, env, context) => {
-    let client: SupaCatchClient | undefined;
-    const capture = (value: unknown): Promise<unknown> => {
-      client ??= createClient(config(env));
-      return client.captureException(value);
-    };
+  fetch: (request, env, context) => {
+    const client = MutableRef.make(Option.none<SupaCatchClient>());
+    const capture = (value: unknown) =>
+      Effect.suspend(() => {
+        const current = Option.getOrElse(MutableRef.get(client), () => {
+          const created = createClient(config(env));
+          MutableRef.set(client, Option.some(created));
+          return created;
+        });
+        return Effect.tryPromise(() => current.captureException(value));
+      });
 
     const captureContext: CaptureContext = { capture };
-    try {
-      return await runWithContext(captureContext, () =>
-        Promise.resolve(worker.fetch(request, env, context)),
-      );
-    } catch (error) {
-      await beforeFatal(once(error, captureContext, () => capture(error)));
-      throw error;
-    } finally {
-      client?.dispose();
-    }
+    const handle = Effect.tryPromise({
+      try: () => Promise.resolve(worker.fetch(request, env, context)),
+      catch: (error) => error,
+    }).pipe(
+      Effect.tapError((error) => beforeFatal(once(error, captureContext, capture(error)))),
+      Effect.ensuring(
+        Effect.sync(() =>
+          Option.match(MutableRef.get(client), {
+            onNone: () => undefined,
+            onSome: (current) => current.dispose(),
+          }),
+        ).pipe(Effect.ignoreCause),
+      ),
+    );
+    return runWithContext(captureContext, () => Effect.runPromise(handle));
   },
 });
 

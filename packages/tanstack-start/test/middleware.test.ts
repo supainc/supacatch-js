@@ -4,6 +4,7 @@ import {
   supaCatchGlobalRequestMiddleware,
 } from "@supainc/supacatch-tanstack-start";
 import { assert, describe, it } from "@effect/vitest";
+import { Effect } from "effect";
 
 describe("TanStack Start middleware", () => {
   for (const [name, middleware] of [
@@ -13,10 +14,7 @@ describe("TanStack Start middleware", () => {
     it(`captures a ${name} exception before rethrowing it`, async () => {
       const error = new Error(`${name} failed`);
       const captured: Array<unknown> = [];
-      const deactivate = registerAutomatic((value) => {
-        captured.push(value);
-        return Promise.resolve();
-      });
+      const deactivate = registerAutomatic((value) => Effect.sync(() => captured.push(value)));
 
       try {
         try {

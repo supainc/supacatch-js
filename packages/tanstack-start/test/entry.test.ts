@@ -5,15 +5,13 @@ import {
   withSupaCatch,
 } from "@supainc/supacatch-tanstack-start";
 import { assert, describe, it } from "@effect/vitest";
+import { Effect } from "effect";
 
 describe("withSupaCatch", () => {
   it("captures an exception before rethrowing it", async () => {
     const error = new Error("server entry failed");
     const captured: Array<unknown> = [];
-    const deactivate = registerAutomatic((value) => {
-      captured.push(value);
-      return Promise.resolve();
-    });
+    const deactivate = registerAutomatic((value) => Effect.sync(() => captured.push(value)));
     const serverEntry = withSupaCatch({
       marker: "preserved",
       fetch: (_request: Request) => Promise.reject(error),
@@ -35,7 +33,7 @@ describe("withSupaCatch", () => {
 
   it("preserves the original exception when capture fails", async () => {
     const error = new Error("original failure");
-    const deactivate = registerAutomatic(() => Promise.reject(new Error("capture failed")));
+    const deactivate = registerAutomatic(() => Effect.fail(new Error("capture failed")));
     const serverEntry = withSupaCatch({
       fetch: (_request: Request) => Promise.reject(error),
     });
@@ -55,10 +53,7 @@ describe("withSupaCatch", () => {
   it("captures once across nested adapter layers", async () => {
     const error = new Error("nested failure");
     const captured: Array<unknown> = [];
-    const deactivate = registerAutomatic((value) => {
-      captured.push(value);
-      return Promise.resolve();
-    });
+    const deactivate = registerAutomatic((value) => Effect.sync(() => captured.push(value)));
     const serverEntry = withSupaCatch({
       fetch: (_request: Request) =>
         supaCatchGlobalRequestMiddleware.options.server?.({

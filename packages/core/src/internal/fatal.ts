@@ -1,3 +1,5 @@
+import { Context, Duration, Effect, MutableRef, Option, type Scope } from "effect";
+
 export interface FatalAdapterShape {
   readonly install: (onFatal: (value: unknown) => boolean) => () => void;
   readonly onFirstFatal: (value: unknown) => void;
@@ -5,65 +7,70 @@ export interface FatalAdapterShape {
   readonly finishDuplicateFatal: (value: unknown) => void;
 }
 
+export class FatalAdapter extends Context.Service<FatalAdapter, FatalAdapterShape>()(
+  "@supainc/supacatch-core/internal/FatalAdapter",
+) {}
+
 interface ActiveRegistration {
   readonly token: symbol;
   readonly deactivate: () => void;
 }
 
-const fatalDeliveryDeadline = 2_000;
-let activeGlobalHandlerRegistration: ActiveRegistration | undefined;
+const fatalDeliveryDeadline = Duration.seconds(2);
 
-export const beforeFatal = async (capture: Promise<unknown>): Promise<void> => {
-  let timeout: ReturnType<typeof setTimeout> | undefined;
-  try {
-    await Promise.race([
-      capture.catch(() => undefined),
-      new Promise<void>((resolve) => {
-        timeout = setTimeout(resolve, fatalDeliveryDeadline);
-      }),
-    ]);
-  } finally {
-    clearTimeout(timeout);
-  }
-};
+const activeGlobalHandlerRegistration = MutableRef.make(Option.none<ActiveRegistration>());
 
-export const installFatalCapture = (
+export const beforeFatal = (capture: Effect.Effect<unknown, unknown>): Effect.Effect<void> =>
+  Effect.raceFirst(capture.pipe(Effect.ignoreCause), Effect.sleep(fatalDeliveryDeadline));
+
+export const captureBeforeFatal = (capture: Effect.Effect<unknown, unknown>): Promise<void> =>
+  Effect.runPromise(beforeFatal(capture));
+
+export const installFatalCapture = Effect.fn("SupaCatch.installFatalCapture")(function* (
   capture: (value: unknown) => Promise<void>,
-  adapter: FatalAdapterShape,
-): (() => void) => {
+) {
+  const adapter = yield* FatalAdapter;
   const token = Symbol("SupaCatchFatalCapture");
-  let handlingFatal = false;
+  const handlingFatal = MutableRef.make(false);
 
   const removeHandlers = adapter.install((value) => {
-    if (handlingFatal) {
+    if (!MutableRef.compareAndSet(handlingFatal, false, true)) {
       adapter.finishDuplicateFatal(value);
       return false;
     }
-    handlingFatal = true;
 
-    try {
-      adapter.onFirstFatal(value);
-    } catch {
-      // Fatal capture must continue even when reporting the original value fails.
-    }
+    Effect.runSync(Effect.sync(() => adapter.onFirstFatal(value)).pipe(Effect.ignoreCause));
     void capture(value).finally(() => adapter.finishFatal(value));
     return true;
   });
 
-  let deactivated = false;
+  const deactivated = MutableRef.make(false);
   const deactivate = (): void => {
-    if (deactivated) return;
-    deactivated = true;
+    if (!MutableRef.compareAndSet(deactivated, false, true)) return;
     removeHandlers();
   };
 
-  const previous = activeGlobalHandlerRegistration;
-  activeGlobalHandlerRegistration = { token, deactivate };
-  previous?.deactivate();
+  const previous = MutableRef.getAndSet(
+    activeGlobalHandlerRegistration,
+    Option.some({ token, deactivate }),
+  );
+  Option.match(previous, {
+    onNone: () => undefined,
+    onSome: (registration) => registration.deactivate(),
+  });
 
   return () => {
-    if (activeGlobalHandlerRegistration?.token !== token) return;
-    activeGlobalHandlerRegistration = undefined;
+    const isCurrent = Option.exists(
+      MutableRef.get(activeGlobalHandlerRegistration),
+      (registration) => registration.token === token,
+    );
+    if (!isCurrent) return;
+    MutableRef.set(activeGlobalHandlerRegistration, Option.none());
     deactivate();
   };
-};
+});
+
+export const installFatalCaptureScoped = (
+  capture: (value: unknown) => Promise<void>,
+): Effect.Effect<() => void, never, FatalAdapter | Scope.Scope> =>
+  Effect.acquireRelease(installFatalCapture(capture), (dispose) => Effect.sync(dispose));

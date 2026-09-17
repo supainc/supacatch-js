@@ -1,4 +1,6 @@
-export type Capture = (value: unknown) => Promise<unknown>;
+import { Effect, MutableRef, Option } from "effect";
+
+export type Capture = (value: unknown) => Effect.Effect<unknown, unknown>;
 
 export interface CaptureContext {
   readonly capture: Capture;
@@ -8,11 +10,14 @@ interface ContextRunner {
   <Result>(context: CaptureContext, task: () => Result): Result;
 }
 
-let runner: ContextRunner | undefined;
+const runner = MutableRef.make(Option.none<ContextRunner>());
 
 export const installContext = (run: ContextRunner): void => {
-  runner = run;
+  MutableRef.set(runner, Option.some(run));
 };
 
 export const runWithContext = <Result>(context: CaptureContext, task: () => Result): Result =>
-  runner === undefined ? task() : runner(context, task);
+  Option.match(MutableRef.get(runner), {
+    onNone: task,
+    onSome: (run) => run(context, task),
+  });

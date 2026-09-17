@@ -1,5 +1,8 @@
 import { assert, describe, it } from "@effect/vitest";
+import { Effect, Layer } from "effect";
+import { FetchHttpClient } from "effect/unstable/http";
 import { createClient } from "../src/index.js";
+import { layer, SupaCatch } from "../src/effect.js";
 import {
   CaptureTimeoutError,
   InvalidSuccessResponseError,
@@ -40,6 +43,29 @@ describe("captureException", () => {
       await client.captureException(new Error("boom"));
 
       assert.include(server.requests[0]?.body ?? "", '"environment":"staging"');
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("runs the same implementation through the Effect service", async () => {
+    const server = await listen(accepted);
+    try {
+      const result = await Effect.runPromise(
+        Effect.gen(function* () {
+          const supaCatch = yield* SupaCatch;
+          return yield* supaCatch.captureException("effect failure");
+        }).pipe(
+          Effect.provide(
+            layer({ endpoint: server.endpoint, ingestKey: "sck_test_key" }).pipe(
+              Layer.provide(FetchHttpClient.layer),
+            ),
+          ),
+        ),
+      );
+
+      assert.strictEqual(result, eventId);
+      assert.lengthOf(server.requests, 1);
     } finally {
       await server.close();
     }

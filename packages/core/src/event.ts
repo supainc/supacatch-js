@@ -1,42 +1,41 @@
-declare const eventIdBrand: unique symbol;
-declare const eventEnvironmentBrand: unique symbol;
+import { DateTime, Option, Predicate, Schema } from "effect";
 
-export type EventId = string & { readonly [eventIdBrand]: "EventId" };
-export type EventEnvironment = string & {
-  readonly [eventEnvironmentBrand]: "EventEnvironment";
-};
+export const EventId = Schema.String.pipe(Schema.check(Schema.isUUID(7)), Schema.brand("EventId"));
+export type EventId = typeof EventId.Type;
 
-export interface EventRequest {
-  readonly name: string;
-  readonly message: string;
-  readonly stackTrace?: string | null;
-  readonly environment?: EventEnvironment;
-  readonly timestamp: string;
-}
+export const EventEnvironment = Schema.NonEmptyString.pipe(
+  Schema.check(Schema.isMaxLength(64)),
+  Schema.check(Schema.isPattern(/^[^\s/]+$/)),
+  Schema.check(
+    Schema.makeFilter((value) => (value === "None" ? "environment cannot be None" : true)),
+  ),
+  Schema.brand("EventEnvironment"),
+);
+export type EventEnvironment = typeof EventEnvironment.Type;
 
-export interface SubmitEventResponse {
-  readonly eventId: EventId;
-}
+const EventTimestamp = Schema.String.pipe(
+  Schema.check(Schema.isPattern(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/)),
+);
 
-export const isEventId = (value: unknown): value is EventId =>
-  typeof value === "string" &&
-  /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+export class EventRequest extends Schema.Class<EventRequest>("EventRequest")({
+  name: Schema.NonEmptyString.pipe(Schema.check(Schema.isMaxLength(200))),
+  message: Schema.String.pipe(Schema.check(Schema.isMaxLength(10_000))),
+  stackTrace: Schema.optional(
+    Schema.NullOr(Schema.String.pipe(Schema.check(Schema.isMaxLength(70_000)))),
+  ),
+  environment: Schema.optional(EventEnvironment),
+  timestamp: EventTimestamp,
+}) {}
 
-export const isEventEnvironment = (value: unknown): value is EventEnvironment =>
-  typeof value === "string" &&
-  value.length > 0 &&
-  value.length <= 64 &&
-  value !== "None" &&
-  !/[\s/]/.test(value);
+export class SubmitEventResponse extends Schema.Class<SubmitEventResponse>("SubmitEventResponse")({
+  eventId: EventId,
+}) {}
 
-const readString = (value: object, property: string): string | undefined => {
-  try {
-    const result = Reflect.get(value, property);
-    return typeof result === "string" ? result : undefined;
-  } catch {
-    return undefined;
-  }
-};
+const readString = (value: object, property: string): string | undefined =>
+  Option.liftThrowable(() => Reflect.get(value, property))().pipe(
+    Option.filter(Predicate.isString),
+    Option.getOrUndefined,
+  );
 
 const stringify = (value: unknown): string => {
   if (typeof value === "string") return value;
@@ -45,8 +44,8 @@ const stringify = (value: unknown): string => {
   }
 
   const seen = new WeakSet<object>();
-  try {
-    const result = JSON.stringify(value, (_key: string, entry: unknown) => {
+  return Option.liftThrowable(() =>
+    JSON.stringify(value, (_key: string, entry: unknown) => {
       if (typeof entry === "bigint" || typeof entry === "symbol") {
         return globalThis.String(entry);
       }
@@ -57,43 +56,35 @@ const stringify = (value: unknown): string => {
       }
 
       return entry;
-    });
-    if (typeof result === "string") return result;
-  } catch {
-    // Fall through to String for values that JSON cannot serialize.
-  }
-
-  try {
-    return globalThis.String(value);
-  } catch {
-    return "[Unserializable value]";
-  }
+    }),
+  )().pipe(
+    Option.filter(Predicate.isString),
+    Option.orElse(() => Option.liftThrowable(() => globalThis.String(value))()),
+    Option.getOrElse(() => "[Unserializable value]"),
+  );
 };
 
-export const normalizeException = (value: unknown, timestamp: Date): EventRequest => {
-  const formattedTimestamp = timestamp.toISOString();
-  let error: Error | undefined;
-  try {
-    error = value instanceof Error ? value : undefined;
-  } catch {
-    error = undefined;
-  }
+export const normalizeException = (value: unknown, timestamp: DateTime.Utc): EventRequest => {
+  const formattedTimestamp = DateTime.formatIso(timestamp);
+  const error = Option.liftThrowable(() => (Predicate.isError(value) ? value : undefined))().pipe(
+    Option.getOrUndefined,
+  );
 
   if (error === undefined) {
-    return {
+    return new EventRequest({
       name: "NonError",
       message: stringify(value).slice(0, 10_000),
       timestamp: formattedTimestamp,
-    };
+    });
   }
 
   const name = readString(error, "name");
   const stack = readString(error, "stack");
 
-  return {
+  return new EventRequest({
     name: (name === undefined || name.length === 0 ? "Error" : name).slice(0, 200),
     message: (readString(error, "message") ?? "").slice(0, 10_000),
     ...(stack === undefined ? {} : { stackTrace: stack.slice(0, 70_000) }),
     timestamp: formattedTimestamp,
-  };
+  });
 };

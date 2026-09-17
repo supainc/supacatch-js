@@ -1,49 +1,42 @@
+import { Duration, Effect, Schema } from "effect";
 import { InvalidConfigurationError } from "./errors.js";
-import { isEventEnvironment, type EventEnvironment } from "./event.js";
+import { EventEnvironment } from "./event.js";
 
-export interface SdkConfig {
-  readonly endpoint?: string;
-  readonly ingestKey: string;
-  readonly environment?: EventEnvironment | string;
-  readonly requestTimeout?: number;
-}
+const Config = Schema.Struct({
+  endpoint: Schema.URLFromString.pipe(
+    Schema.check(
+      Schema.makeFilter((endpoint) =>
+        endpoint.protocol === "http:" || endpoint.protocol === "https:"
+          ? true
+          : "endpoint must use HTTP or HTTPS",
+      ),
+    ),
+    Schema.withDecodingDefault(Effect.succeed("https://ingest.catch.supa.dev")),
+  ),
+  ingestKey: Schema.RedactedFromValue(Schema.String.pipe(Schema.check(Schema.isMinLength(8)))),
+  environment: Schema.optional(EventEnvironment),
+  requestTimeout: Schema.DurationFromMillis.pipe(
+    Schema.check(
+      Schema.makeFilter((requestTimeout) =>
+        Duration.isFinite(requestTimeout) && Duration.isPositive(requestTimeout)
+          ? true
+          : "requestTimeout must be a positive number of milliseconds",
+      ),
+    ),
+    Schema.withDecodingDefault(Effect.succeed(5_000)),
+  ),
+});
 
-export interface RuntimeConfig {
-  readonly endpoint: URL;
-  readonly ingestKey: string;
-  readonly environment?: EventEnvironment;
-  readonly requestTimeout: number;
-}
+export type SdkConfig = typeof Config.Encoded;
+export type RuntimeConfig = typeof Config.Type;
 
-export const resolveConfig = (input: SdkConfig): RuntimeConfig => {
-  let endpoint: URL;
-  try {
-    endpoint = new URL(input.endpoint ?? "https://ingest.catch.supa.dev");
-  } catch {
-    throw new InvalidConfigurationError({ issue: "endpoint must be a valid URL" });
-  }
-
-  if (endpoint.protocol !== "http:" && endpoint.protocol !== "https:") {
-    throw new InvalidConfigurationError({ issue: "endpoint must use HTTP or HTTPS" });
-  }
-  if (typeof input.ingestKey !== "string" || input.ingestKey.length < 8) {
-    throw new InvalidConfigurationError({ issue: "ingestKey must contain at least 8 characters" });
-  }
-  if (input.environment !== undefined && !isEventEnvironment(input.environment)) {
-    throw new InvalidConfigurationError({ issue: "environment is invalid" });
-  }
-
-  const requestTimeout = input.requestTimeout ?? 5_000;
-  if (!Number.isFinite(requestTimeout) || requestTimeout <= 0) {
-    throw new InvalidConfigurationError({
-      issue: "requestTimeout must be a positive number of milliseconds",
-    });
-  }
-
-  return {
-    endpoint,
-    ingestKey: input.ingestKey,
-    ...(input.environment === undefined ? {} : { environment: input.environment }),
-    requestTimeout,
-  };
-};
+export const resolveConfig = Effect.fn("SupaCatch.resolveConfig")((input: SdkConfig) =>
+  Schema.decodeEffect(Config)(input).pipe(
+    Effect.mapError(
+      (error) =>
+        new InvalidConfigurationError({
+          issue: error.message,
+        }),
+    ),
+  ),
+);

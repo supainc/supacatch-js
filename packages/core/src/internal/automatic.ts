@@ -1,4 +1,5 @@
 import { AsyncLocalStorage } from "node:async_hooks";
+import { Effect, MutableRef, Option } from "effect";
 import { installContext, type Capture, type CaptureContext } from "./context.js";
 import { once } from "./dedupe.js";
 
@@ -8,23 +9,34 @@ interface Registration {
 }
 
 const requestContext = new AsyncLocalStorage<CaptureContext>();
-let runtimeCapture: Registration | undefined;
+const runtimeCapture = MutableRef.make(Option.none<Registration>());
 
 installContext((context, task) => requestContext.run(context, task));
 
-export const captureAutomatic = async (value: unknown): Promise<void> => {
-  const context = requestContext.getStore() ?? runtimeCapture?.context;
-  if (context !== undefined) await once(value, context, () => context.capture(value));
-};
+export const captureAutomatic = (value: unknown): Effect.Effect<void, unknown> =>
+  Effect.suspend(() => {
+    const context = Option.fromNullishOr(requestContext.getStore()).pipe(
+      Option.orElse(() =>
+        Option.map(MutableRef.get(runtimeCapture), (registration) => registration.context),
+      ),
+    );
+    return Option.match(context, {
+      onNone: () => Effect.succeed(undefined),
+      onSome: (current) => once(value, current, current.capture(value)),
+    });
+  });
 
 export const registerAutomatic = (capture: Capture): (() => void) => {
   const registration: Registration = {
     context: { capture },
     token: Symbol("SupaCatchAutomaticCapture"),
   };
-  runtimeCapture = registration;
+  MutableRef.set(runtimeCapture, Option.some(registration));
 
   return () => {
-    if (runtimeCapture?.token === registration.token) runtimeCapture = undefined;
+    const current = MutableRef.get(runtimeCapture);
+    if (Option.exists(current, ({ token }) => token === registration.token)) {
+      MutableRef.set(runtimeCapture, Option.none());
+    }
   };
 };

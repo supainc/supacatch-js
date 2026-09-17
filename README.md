@@ -185,8 +185,8 @@ const eventId = await supaCatch.captureException(new Error("Example failure"));
 
 ## Effect
 
-Install the opt-in Effect integration. Runtime packages and `core` do not install or constrain
-Effect.
+Install the opt-in Effect integration. The SDK may use its own Effect version internally, but only
+this package requires the application to provide a compatible Effect peer.
 
 ```sh
 npm install @supainc/supacatch-effect@alpha effect

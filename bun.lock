@@ -35,11 +35,15 @@
       "version": "0.1.0-alpha.7",
       "dependencies": {
         "@supainc/supacatch-core": "0.1.0-alpha.7",
+        "effect": "4.0.0-beta.103",
       },
     },
     "packages/core": {
       "name": "@supainc/supacatch-core",
       "version": "0.1.0-alpha.7",
+      "dependencies": {
+        "effect": "4.0.0-beta.103",
+      },
     },
     "packages/effect": {
       "name": "@supainc/supacatch-effect",
@@ -64,6 +68,7 @@
       "dependencies": {
         "@supainc/supacatch-cloudflare": "0.1.0-alpha.7",
         "@supainc/supacatch-core": "0.1.0-alpha.7",
+        "effect": "4.0.0-beta.103",
       },
     },
   },

@@ -1,6 +1,8 @@
-import { captureWith } from "./capture.js";
+import { Cause, Effect, Layer, ManagedRuntime, Option } from "effect";
+import { FetchHttpClient } from "effect/unstable/http";
 import type { SdkConfig } from "./config.js";
-import { resolveConfig } from "./config.js";
+import { layer, SupaCatch } from "./effect.js";
+import { TransportError } from "./errors.js";
 import type { EventId } from "./event.js";
 
 export interface SupaCatchClient {
@@ -9,27 +11,19 @@ export interface SupaCatchClient {
 }
 
 export const createClient = (config: SdkConfig): SupaCatchClient => {
-  const resolved = resolveConfig(config);
-  const active = new Set<AbortController>();
-
+  const runtime = ManagedRuntime.make(layer(config).pipe(Layer.provide(FetchHttpClient.layer)));
   return {
-    captureException: async (value) => {
-      const controller = new AbortController();
-      active.add(controller);
-      const timeout = setTimeout(
-        () => controller.abort("SupaCatchTimeout"),
-        resolved.requestTimeout,
-      );
-      try {
-        return await captureWith(resolved, value, controller.signal);
-      } finally {
-        clearTimeout(timeout);
-        active.delete(controller);
-      }
-    },
-    dispose: () => {
-      for (const controller of active) controller.abort("SupaCatchDisposed");
-      active.clear();
-    },
+    captureException: (value) =>
+      runtime.runPromise(
+        Effect.flatMap(SupaCatch, (supaCatch) => supaCatch.captureException(value)).pipe(
+          Effect.catchCause((cause) =>
+            Option.match(Cause.findErrorOption(cause), {
+              onSome: Effect.fail,
+              onNone: () => Effect.fail(new TransportError({ cause: Cause.pretty(cause) })),
+            }),
+          ),
+        ),
+      ),
+    dispose: () => void runtime.dispose(),
   };
 };
