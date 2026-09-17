@@ -23,6 +23,10 @@
     },
     "./adapter": {
       "types": "./dist/adapter.d.ts",
+      "workerd": "./dist/adapter.js",
+      "worker": "./dist/adapter.js",
+      "node": "./dist/adapter.js",
+      "bun": "./dist/adapter.js",
       "browser": "./dist/adapter.browser.js",
       "import": "./dist/adapter.js"
     },
