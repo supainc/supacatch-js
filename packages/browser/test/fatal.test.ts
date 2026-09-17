@@ -54,11 +54,11 @@ describe("browser global handlers", () => {
   it("replaces registrations and prevents stale disposal", () => {
     const restore = installEventTarget();
     try {
-      const first = SupaCatch.init({ publicKey: "spk_test_key" });
+      const first = SupaCatch.init({ ingestKey: "sck_test_key" });
       assert.strictEqual(listenerCount("error"), 1);
       assert.strictEqual(listenerCount("unhandledrejection"), 1);
 
-      const second = SupaCatch.init({ publicKey: "spk_test_key" });
+      const second = SupaCatch.init({ ingestKey: "sck_test_key" });
       assert.strictEqual(listenerCount("error"), 1);
       assert.strictEqual(listenerCount("unhandledrejection"), 1);
 
@@ -77,7 +77,7 @@ describe("browser global handlers", () => {
   it("captures an unhandled error event", async () => {
     const restore = installEventTarget();
     const server = await listen(accepted);
-    const client = SupaCatch.init({ endpoint: server.endpoint, publicKey: "spk_test_key" });
+    const client = SupaCatch.init({ endpoint: server.endpoint, ingestKey: "sck_test_key" });
     const error = new Error("browser exception");
 
     try {
@@ -89,7 +89,7 @@ describe("browser global handlers", () => {
       await Effect.runPromise(Effect.sleep("100 millis"));
       assert.lengthOf(server.requests, 1);
       assert.include(server.requests[0]?.body ?? "", '"message":"browser exception"');
-      assert.strictEqual(server.requests[0]?.authorization, "Bearer spk_test_key");
+      assert.strictEqual(server.requests[0]?.authorization, "Bearer sck_test_key");
     } finally {
       client.dispose();
       await server.close();
@@ -100,7 +100,7 @@ describe("browser global handlers", () => {
   it("captures an unhandled rejection event", async () => {
     const restore = installEventTarget();
     const server = await listen(accepted);
-    const client = SupaCatch.init({ endpoint: server.endpoint, publicKey: "spk_test_key" });
+    const client = SupaCatch.init({ endpoint: server.endpoint, ingestKey: "sck_test_key" });
     const error = new Error("browser rejection");
 
     try {

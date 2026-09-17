@@ -2,7 +2,7 @@
 
 Official SupaCatch SDKs for JavaScript. This repository uses a Bun workspace with separate core, runtime, and framework packages.
 
-> Do not bundle a server package into browser code. A SupaCatch Ingest Key is a secret. Use `@supainc/supacatch-browser` with a browser public key instead.
+> Do not bundle a server package into browser code. Use `@supainc/supacatch-browser` for client-side capture. The Ingest Key is public and is shared by server and browser clients.
 
 ## Packages
 
@@ -60,17 +60,15 @@ const supaCatch = SupaCatch.init({ ingestKey, environment: "production" });
 
 ### Browser
 
-Use a browser public key. Never put a server Ingest Key in client-side bundles or public configuration.
-
-Initialization registers `error` and `unhandledrejection` listeners on the global event target. Capture does not unload or navigate the page.
+Initialization registers `error` and `unhandledrejection` listeners on the global event target. Capture does not unload or navigate the page. The same Ingest Key used on the server is public and may be embedded in the client.
 
 ```ts
 import * as SupaCatch from "@supainc/supacatch-browser";
 
-const publicKey = import.meta.env.VITE_SUPACATCH_PUBLIC_KEY;
-if (!publicKey) throw new Error("VITE_SUPACATCH_PUBLIC_KEY is required");
+const ingestKey = import.meta.env.VITE_SUPACATCH_INGEST_KEY;
+if (!ingestKey) throw new Error("VITE_SUPACATCH_INGEST_KEY is required");
 
-const supaCatch = SupaCatch.init({ publicKey, environment: "production" });
+const supaCatch = SupaCatch.init({ ingestKey, environment: "production" });
 ```
 
 ### Cloudflare Workers
@@ -98,7 +96,7 @@ When the handler throws or rejects, the wrapper attempts delivery for at most tw
 
 ### TanStack Start
 
-The TanStack Start adapter captures server-side failures from requests, Server Functions, and the server entry point. It uses conditional exports: server builds receive the capture implementation, while browser builds receive middleware stubs with no server handler. The Ingest Key and SDK client therefore never enter the browser module graph.
+The TanStack Start adapter captures server-side failures from requests, Server Functions, and the server entry point. It uses conditional exports: server builds receive the capture implementation, while browser builds receive middleware stubs with no server handler. For client-side capture in the same app, initialize `@supainc/supacatch-browser` separately.
 
 Add the two global middlewares first in their arrays. Import them directly from the package; do not put them in a `*.server.ts` module because `src/start.ts` is also transformed for the browser.
 
@@ -235,7 +233,7 @@ The adapter entry exports runtime initialization, automatic capture registration
 
 ## Privacy and delivery semantics
 
-SupaCatch sends exception names, messages, raw stack strings, capture timestamps, and the configured environment. This release has no redaction hook or source-map processing. Never place a server Ingest Key in logs, client-side bundles, or public configuration. Browser clients use a public key issued for that purpose.
+SupaCatch sends exception names, messages, raw stack strings, capture timestamps, and the configured environment. This release has no redaction hook or source-map processing. The Ingest Key is public and may appear in browser bundles; still avoid pasting it into bug reports when a rotation is easier.
 
 A successful capture means the ingest endpoint accepted the Event into its queue. It does not mean downstream grouping or storage has completed.
 

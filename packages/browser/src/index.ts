@@ -2,14 +2,10 @@ import type { SdkConfig, SupaCatchClient } from "@supainc/supacatch-core";
 import { initRuntime } from "@supainc/supacatch-core/adapter";
 import { browserFatalAdapter } from "./window-adapter.js";
 
-export type BrowserSdkConfig = Omit<SdkConfig, "ingestKey"> & {
-  readonly publicKey: string;
-};
+export const init = (config: SdkConfig): SupaCatchClient =>
+  initRuntime(config, browserFatalAdapter);
 
-export const init = ({ publicKey, ...config }: BrowserSdkConfig): SupaCatchClient =>
-  initRuntime({ ...config, ingestKey: publicKey }, browserFatalAdapter);
-
-export type { SupaCatchClient } from "@supainc/supacatch-core";
+export type { SdkConfig, SupaCatchClient } from "@supainc/supacatch-core";
 export {
   CaptureTimeoutError,
   InvalidConfigurationError,
