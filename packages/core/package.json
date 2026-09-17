@@ -13,8 +13,8 @@
   ],
   "type": "module",
   "sideEffects": [
-    "./dist/internal/automatic.js",
-    "./dist/internal/automatic.browser.js"
+    "./dist/adapter.js",
+    "./dist/adapter.browser.js"
   ],
   "exports": {
     ".": {
@@ -29,6 +29,10 @@
       "bun": "./dist/adapter.js",
       "browser": "./dist/adapter.browser.js",
       "import": "./dist/adapter.js"
+    },
+    "./effect": {
+      "types": "./dist/effect.d.ts",
+      "import": "./dist/effect.js"
     },
     "./package.json": "./package.json"
   },

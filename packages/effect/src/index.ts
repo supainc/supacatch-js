@@ -1,11 +1,12 @@
 import {
-  createClient,
   InvalidConfigurationError,
   type CaptureError,
   type EventId,
   type SdkConfig,
 } from "@supainc/supacatch-core";
+import { layer as coreLayer, SupaCatch as CoreSupaCatch } from "@supainc/supacatch-core/effect";
 import { Context, Effect, Layer } from "effect";
+import { FetchHttpClient } from "effect/unstable/http";
 
 export class SupaCatch extends Context.Service<
   SupaCatch,
@@ -17,27 +18,13 @@ export class SupaCatch extends Context.Service<
 export const layer = (config: SdkConfig): Layer.Layer<SupaCatch, InvalidConfigurationError> =>
   Layer.effect(
     SupaCatch,
-    Effect.acquireRelease(
-      Effect.try({
-        try: () => createClient(config),
-        catch: (cause) =>
-          cause instanceof InvalidConfigurationError
-            ? cause
-            : new InvalidConfigurationError({ issue: "client initialization failed" }),
-      }),
-      (client) => Effect.sync(client.dispose),
-    ).pipe(
-      Effect.map((client) =>
-        SupaCatch.of({
-          captureException: (value) =>
-            Effect.tryPromise({
-              try: () => client.captureException(value),
-              catch: (cause) => cause as CaptureError,
-            }),
-        }),
-      ),
-    ),
-  );
+    Effect.gen(function* () {
+      const inner = yield* CoreSupaCatch;
+      return SupaCatch.of({
+        captureException: (value) => inner.captureException(value),
+      });
+    }),
+  ).pipe(Layer.provide(coreLayer(config)), Layer.provide(FetchHttpClient.layer));
 
 export type {
   CaptureError,

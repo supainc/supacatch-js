@@ -1,25 +1,46 @@
-import { Effect, Layer } from "effect";
-import { FetchHttpClient } from "effect/unstable/http";
+import { Effect } from "effect";
 import type { SdkConfig } from "../config.js";
-import type { InvalidConfigurationError } from "../errors.js";
-import { layer as supaCatchLayer, SupaCatch } from "../effect.js";
 import { createClient, type SupaCatchClient } from "../client.js";
 import { registerAutomatic } from "./automatic.js";
 import {
   captureBeforeFatal,
   FatalAdapter,
   type FatalAdapterShape,
+  installContinuousCapture,
   installFatalCapture,
-  installFatalCaptureScoped,
 } from "./fatal.js";
 
-export const init = (config: SdkConfig, adapter: FatalAdapterShape): SupaCatchClient => {
+export type RuntimeCapturePolicy = "fatal" | "continuous";
+
+export const init = (
+  config: SdkConfig,
+  adapter: FatalAdapterShape,
+  policy: RuntimeCapturePolicy = "fatal",
+): SupaCatchClient => {
   const client = createClient(config);
-  const removeHandlers = Effect.runSync(
-    installFatalCapture((value) =>
-      captureBeforeFatal(Effect.tryPromise(() => client.captureException(value))),
-    ).pipe(Effect.provideService(FatalAdapter, adapter)),
-  );
+
+  let install: Effect.Effect<() => void, never, FatalAdapter>;
+  switch (policy) {
+    case "continuous":
+      install = installContinuousCapture((value) =>
+        client.captureException(value).then(
+          () => undefined,
+          () => undefined,
+        ),
+      );
+      break;
+    case "fatal":
+      install = installFatalCapture((value) =>
+        captureBeforeFatal(Effect.tryPromise(() => client.captureException(value))),
+      );
+      break;
+    default: {
+      const _exhaustive: never = policy;
+      throw new Error(`unexpected capture policy: ${String(_exhaustive)}`);
+    }
+  }
+
+  const removeHandlers = Effect.runSync(install.pipe(Effect.provideService(FatalAdapter, adapter)));
 
   const deactivateClient = registerAutomatic((value) =>
     Effect.tryPromise(() => client.captureException(value)),
@@ -33,22 +54,3 @@ export const init = (config: SdkConfig, adapter: FatalAdapterShape): SupaCatchCl
     },
   };
 };
-
-export const layer = (
-  config: SdkConfig,
-  adapter: FatalAdapterShape,
-): Layer.Layer<SupaCatch, InvalidConfigurationError> =>
-  Layer.effect(
-    SupaCatch,
-    Effect.gen(function* () {
-      const service = yield* SupaCatch;
-      yield* Effect.acquireRelease(
-        Effect.sync(() => registerAutomatic(service.captureException)),
-        (deactivate) => Effect.sync(deactivate),
-      );
-      yield* installFatalCaptureScoped((value) =>
-        captureBeforeFatal(service.captureException(value)),
-      );
-      return service;
-    }).pipe(Effect.provideService(FatalAdapter, adapter)),
-  ).pipe(Layer.provide(supaCatchLayer(config)), Layer.provide(FetchHttpClient.layer));
