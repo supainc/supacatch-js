@@ -1,11 +1,9 @@
 import type { SdkConfig, SupaCatchClient } from "@supainc/supacatch-core";
-import { initRuntime, runtimeLayer } from "@supainc/supacatch-core/adapter";
+import { initRuntime } from "@supainc/supacatch-core/adapter";
 import { processFatalAdapter } from "./process-adapter.js";
 
 export const init = (config: SdkConfig): SupaCatchClient =>
   initRuntime(config, processFatalAdapter);
-
-export const layer = (config: SdkConfig) => runtimeLayer(config, processFatalAdapter);
 
 export type { SdkConfig, SupaCatchClient } from "@supainc/supacatch-core";
 export {
@@ -18,8 +16,8 @@ export {
   UnavailableResponseError,
   UnexpectedResponseError,
   type CaptureError,
-  EventEnvironment,
-  EventId,
-  EventRequest,
-  SubmitEventResponse,
+  type EventEnvironment,
+  type EventId,
+  type EventRequest,
+  type SubmitEventResponse,
 } from "@supainc/supacatch-core";

@@ -1,7 +1,7 @@
-import { FatalAdapter } from "@supainc/supacatch-core/adapter";
+import type { FatalAdapterShape } from "@supainc/supacatch-core/adapter";
 import process from "node:process";
 
-export const processFatalAdapter = FatalAdapter.of({
+export const processFatalAdapter: FatalAdapterShape = {
   install: (onFatal) => {
     const onException = (error: Error): void => {
       onFatal(error);
@@ -21,4 +21,4 @@ export const processFatalAdapter = FatalAdapter.of({
   onFirstFatal: (value) => console.error(value),
   finishFatal: () => process.exit(1),
   finishDuplicateFatal: () => process.exit(1),
-});
+};

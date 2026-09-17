@@ -7,4 +7,4 @@ export {
   installFatalCapture,
   type FatalAdapterShape,
 } from "./internal/fatal.js";
-export { init as initRuntime, layer as runtimeLayer } from "./internal/runtime.js";
+export { init as initRuntime } from "./internal/runtime.js";

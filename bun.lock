@@ -10,6 +10,7 @@
         "@supainc/supacatch-bun": "workspace:*",
         "@supainc/supacatch-cloudflare": "workspace:*",
         "@supainc/supacatch-core": "workspace:*",
+        "@supainc/supacatch-effect": "workspace:*",
         "@supainc/supacatch-node": "workspace:*",
         "@supainc/supacatch-tanstack-start": "workspace:*",
         "@types/node": "26.2.0",
@@ -28,25 +29,30 @@
       "dependencies": {
         "@supainc/supacatch-node": "0.1.0-alpha.7",
       },
-      "peerDependencies": {
-        "effect": "4.0.0-beta.103",
-      },
     },
     "packages/cloudflare": {
       "name": "@supainc/supacatch-cloudflare",
       "version": "0.1.0-alpha.7",
       "dependencies": {
         "@supainc/supacatch-core": "0.1.0-alpha.7",
-      },
-      "peerDependencies": {
         "effect": "4.0.0-beta.103",
       },
     },
     "packages/core": {
       "name": "@supainc/supacatch-core",
       "version": "0.1.0-alpha.7",
-      "peerDependencies": {
+      "dependencies": {
         "effect": "4.0.0-beta.103",
+      },
+    },
+    "packages/effect": {
+      "name": "@supainc/supacatch-effect",
+      "version": "0.1.0-alpha.7",
+      "dependencies": {
+        "@supainc/supacatch-core": "0.1.0-alpha.7",
+      },
+      "peerDependencies": {
+        "effect": "^4.0.0-beta.103",
       },
     },
     "packages/node": {
@@ -55,9 +61,6 @@
       "dependencies": {
         "@supainc/supacatch-core": "0.1.0-alpha.7",
       },
-      "peerDependencies": {
-        "effect": "4.0.0-beta.103",
-      },
     },
     "packages/tanstack-start": {
       "name": "@supainc/supacatch-tanstack-start",
@@ -65,8 +68,6 @@
       "dependencies": {
         "@supainc/supacatch-cloudflare": "0.1.0-alpha.7",
         "@supainc/supacatch-core": "0.1.0-alpha.7",
-      },
-      "peerDependencies": {
         "effect": "4.0.0-beta.103",
       },
     },
@@ -221,6 +222,8 @@
     "@supainc/supacatch-cloudflare": ["@supainc/supacatch-cloudflare@workspace:packages/cloudflare"],
 
     "@supainc/supacatch-core": ["@supainc/supacatch-core@workspace:packages/core"],
+
+    "@supainc/supacatch-effect": ["@supainc/supacatch-effect@workspace:packages/effect"],
 
     "@supainc/supacatch-node": ["@supainc/supacatch-node@workspace:packages/node"],
 

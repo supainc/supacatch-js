@@ -4,7 +4,6 @@ import { spawn, spawnSync } from "node:child_process";
 import { resolve } from "node:path";
 import process from "node:process";
 import { pathToFileURL } from "node:url";
-import { Effect } from "effect";
 import { accepted, listen, silent } from "../../../test/server.js";
 
 const config = {
@@ -30,22 +29,6 @@ describe("Node.js global handlers", () => {
     assert.strictEqual(process.listenerCount("unhandledRejection"), rejectionBefore + 1);
 
     second.dispose();
-    assert.strictEqual(process.listenerCount("uncaughtException"), uncaughtBefore);
-    assert.strictEqual(process.listenerCount("unhandledRejection"), rejectionBefore);
-  });
-
-  it("scopes Effect handler registration to the runtime Layer", async () => {
-    const uncaughtBefore = process.listenerCount("uncaughtException");
-    const rejectionBefore = process.listenerCount("unhandledRejection");
-
-    await Effect.runPromise(
-      Effect.gen(function* () {
-        assert.strictEqual(process.listenerCount("uncaughtException"), uncaughtBefore + 1);
-        assert.strictEqual(process.listenerCount("unhandledRejection"), rejectionBefore + 1);
-        yield* Effect.void;
-      }).pipe(Effect.provide(SupaCatch.layer(config))),
-    );
-
     assert.strictEqual(process.listenerCount("uncaughtException"), uncaughtBefore);
     assert.strictEqual(process.listenerCount("unhandledRejection"), rejectionBefore);
   });

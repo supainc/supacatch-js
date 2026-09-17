@@ -69,8 +69,8 @@ export {
   UnavailableResponseError,
   UnexpectedResponseError,
   type CaptureError,
-  EventEnvironment,
-  EventId,
-  EventRequest,
-  SubmitEventResponse,
+  type EventEnvironment,
+  type EventId,
+  type EventRequest,
+  type SubmitEventResponse,
 } from "@supainc/supacatch-core";
