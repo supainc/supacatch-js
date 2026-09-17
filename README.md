@@ -258,6 +258,8 @@ Expected failures remain typed in the Effect error channel and reject Promise ca
 
 `@supainc/supacatch-core/adapter` is the supported contract for packages that add a SupaCatch runtime integration. Application code should use the runtime packages above instead.
 
+`@supainc/supacatch-core/effect` exposes the Effect service and layer without a default HTTP client. Prefer `@supainc/supacatch-effect`, which provides `FetchHttpClient`.
+
 The adapter entry exports runtime initialization, automatic capture registration, capture context, deduplication, and fatal handling. Other files under `@supainc/supacatch-core` are private unless the package export map lists them.
 
 ## Privacy and delivery semantics

@@ -1,4 +1,4 @@
-import { Context, Duration, Effect, MutableRef, Option, type Scope } from "effect";
+import { Context, Duration, Effect, MutableRef, Option } from "effect";
 
 export interface FatalAdapterShape {
   readonly install: (onFatal: (value: unknown) => boolean) => () => void;
@@ -26,11 +26,38 @@ export const beforeFatal = (capture: Effect.Effect<unknown, unknown>): Effect.Ef
 export const captureBeforeFatal = (capture: Effect.Effect<unknown, unknown>): Promise<void> =>
   Effect.runPromise(beforeFatal(capture));
 
+const activateGlobalHandlers = (label: string, removeHandlers: () => void): (() => void) => {
+  const token = Symbol(label);
+  const deactivated = MutableRef.make(false);
+  const deactivate = (): void => {
+    if (!MutableRef.compareAndSet(deactivated, false, true)) return;
+    removeHandlers();
+  };
+
+  const previous = MutableRef.getAndSet(
+    activeGlobalHandlerRegistration,
+    Option.some({ token, deactivate }),
+  );
+  Option.match(previous, {
+    onNone: () => undefined,
+    onSome: (registration) => registration.deactivate(),
+  });
+
+  return () => {
+    const isCurrent = Option.exists(
+      MutableRef.get(activeGlobalHandlerRegistration),
+      (registration) => registration.token === token,
+    );
+    if (!isCurrent) return;
+    MutableRef.set(activeGlobalHandlerRegistration, Option.none());
+    deactivate();
+  };
+};
+
 export const installFatalCapture = Effect.fn("SupaCatch.installFatalCapture")(function* (
   capture: (value: unknown) => Promise<void>,
 ) {
   const adapter = yield* FatalAdapter;
-  const token = Symbol("SupaCatchFatalCapture");
   const handlingFatal = MutableRef.make(false);
 
   const removeHandlers = adapter.install((value) => {
@@ -44,30 +71,7 @@ export const installFatalCapture = Effect.fn("SupaCatch.installFatalCapture")(fu
     return true;
   });
 
-  const deactivated = MutableRef.make(false);
-  const deactivate = (): void => {
-    if (!MutableRef.compareAndSet(deactivated, false, true)) return;
-    removeHandlers();
-  };
-
-  const previous = MutableRef.getAndSet(
-    activeGlobalHandlerRegistration,
-    Option.some({ token, deactivate }),
-  );
-  Option.match(previous, {
-    onNone: () => undefined,
-    onSome: (registration) => registration.deactivate(),
-  });
-
-  return () => {
-    const isCurrent = Option.exists(
-      MutableRef.get(activeGlobalHandlerRegistration),
-      (registration) => registration.token === token,
-    );
-    if (!isCurrent) return;
-    MutableRef.set(activeGlobalHandlerRegistration, Option.none());
-    deactivate();
-  };
+  return activateGlobalHandlers("SupaCatchFatalCapture", removeHandlers);
 });
 
 /** Installs global handlers that keep capturing; for page lifetimes that outlive a single failure. */
@@ -75,7 +79,6 @@ export const installContinuousCapture = Effect.fn("SupaCatch.installContinuousCa
   capture: (value: unknown) => Promise<void>,
 ) {
   const adapter = yield* FatalAdapter;
-  const token = Symbol("SupaCatchContinuousCapture");
 
   const removeHandlers = adapter.install((value) => {
     Effect.runSync(Effect.sync(() => adapter.onFirstFatal(value)).pipe(Effect.ignoreCause));
@@ -83,33 +86,5 @@ export const installContinuousCapture = Effect.fn("SupaCatch.installContinuousCa
     return true;
   });
 
-  const deactivated = MutableRef.make(false);
-  const deactivate = (): void => {
-    if (!MutableRef.compareAndSet(deactivated, false, true)) return;
-    removeHandlers();
-  };
-
-  const previous = MutableRef.getAndSet(
-    activeGlobalHandlerRegistration,
-    Option.some({ token, deactivate }),
-  );
-  Option.match(previous, {
-    onNone: () => undefined,
-    onSome: (registration) => registration.deactivate(),
-  });
-
-  return () => {
-    const isCurrent = Option.exists(
-      MutableRef.get(activeGlobalHandlerRegistration),
-      (registration) => registration.token === token,
-    );
-    if (!isCurrent) return;
-    MutableRef.set(activeGlobalHandlerRegistration, Option.none());
-    deactivate();
-  };
+  return activateGlobalHandlers("SupaCatchContinuousCapture", removeHandlers);
 });
-
-export const installFatalCaptureScoped = (
-  capture: (value: unknown) => Promise<void>,
-): Effect.Effect<() => void, never, FatalAdapter | Scope.Scope> =>
-  Effect.acquireRelease(installFatalCapture(capture), (dispose) => Effect.sync(dispose));

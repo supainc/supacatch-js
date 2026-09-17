@@ -1,7 +1,7 @@
 import { Effect } from "effect";
 import type { SdkConfig } from "../config.js";
 import { createClient, type SupaCatchClient } from "../client.js";
-import { registerAutomatic } from "./automatic.browser.js";
+import { registerAutomatic } from "./automatic.js";
 import { FatalAdapter, type FatalAdapterShape, installContinuousCapture } from "./fatal.js";
 
 export const init = (config: SdkConfig, adapter: FatalAdapterShape): SupaCatchClient => {
