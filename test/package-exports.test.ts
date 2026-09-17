@@ -1,3 +1,4 @@
+import * as BrowserSdk from "@supainc/supacatch-browser";
 import * as BunSdk from "@supainc/supacatch-bun";
 import * as CloudflareSdk from "@supainc/supacatch-cloudflare";
 import * as CoreSdk from "@supainc/supacatch-core";
@@ -12,6 +13,10 @@ describe("runtime package exports", () => {
     const runtimeExports = [...sharedExports, "init"].sort();
     assert.deepStrictEqual(Object.keys(NodeSdk).sort(), runtimeExports);
     assert.deepStrictEqual(Object.keys(BunSdk).sort(), runtimeExports);
+  });
+
+  it("keeps Browser on the runtime API", () => {
+    assert.deepStrictEqual(Object.keys(BrowserSdk).sort(), [...sharedExports, "init"].sort());
   });
 
   it("keeps Cloudflare on the worker API", () => {

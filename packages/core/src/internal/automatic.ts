@@ -1,4 +1,3 @@
-import { AsyncLocalStorage } from "node:async_hooks";
 import { Effect, MutableRef, Option } from "effect";
 import { installContext, type Capture, type CaptureContext } from "./context.js";
 import { once } from "./dedupe.js";
@@ -8,7 +7,63 @@ interface Registration {
   readonly token: symbol;
 }
 
-const requestContext = new AsyncLocalStorage<CaptureContext>();
+interface RequestStore {
+  readonly getStore: () => CaptureContext | undefined;
+  readonly run: <Result>(context: CaptureContext, task: () => Result) => Result;
+}
+
+interface AsyncLocalStorageLike<Value> {
+  getStore(): Value | undefined;
+  run<Result>(store: Value, callback: () => Result): Result;
+}
+
+interface AsyncLocalStorageConstructor {
+  new <Value>(): AsyncLocalStorageLike<Value>;
+}
+
+const loadAsyncLocalStorage = (): AsyncLocalStorageConstructor | undefined => {
+  try {
+    const getBuiltinModule = (
+      globalThis as {
+        process?: { getBuiltinModule?: (id: string) => { AsyncLocalStorage?: unknown } };
+      }
+    ).process?.getBuiltinModule;
+    if (typeof getBuiltinModule !== "function") return undefined;
+    const AsyncLocalStorage = getBuiltinModule("async_hooks")?.AsyncLocalStorage;
+    return typeof AsyncLocalStorage === "function"
+      ? (AsyncLocalStorage as AsyncLocalStorageConstructor)
+      : undefined;
+  } catch {
+    return undefined;
+  }
+};
+
+const createRequestStore = (): RequestStore => {
+  const AsyncLocalStorage = loadAsyncLocalStorage();
+  if (AsyncLocalStorage !== undefined) {
+    const storage = new AsyncLocalStorage<CaptureContext>();
+    return {
+      getStore: () => storage.getStore(),
+      run: (context, task) => storage.run(context, task),
+    };
+  }
+
+  let current: CaptureContext | undefined;
+  return {
+    getStore: () => current,
+    run: (context, task) => {
+      const previous = current;
+      current = context;
+      try {
+        return task();
+      } finally {
+        current = previous;
+      }
+    },
+  };
+};
+
+const requestContext = createRequestStore();
 const runtimeCapture = MutableRef.make(Option.none<Registration>());
 
 installContext((context, task) => requestContext.run(context, task));

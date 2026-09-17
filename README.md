@@ -1,8 +1,8 @@
 # SupaCatch JavaScript SDKs
 
-Official SupaCatch SDKs for server-side JavaScript. This repository uses a Bun workspace with separate core, runtime, and framework packages.
+Official SupaCatch SDKs for JavaScript. This repository uses a Bun workspace with separate core, runtime, and framework packages.
 
-> Do not bundle a server package into browser code. A SupaCatch Ingest Key is a secret. Browser support requires a separate authentication model and will use `@supainc/supacatch-browser`.
+> Do not bundle a server package into browser code. A SupaCatch Ingest Key is a secret. Use `@supainc/supacatch-browser` with a browser public key instead.
 
 ## Packages
 
@@ -12,6 +12,7 @@ Official SupaCatch SDKs for server-side JavaScript. This repository uses a Bun w
 | `@supainc/supacatch-effect`         | Opt-in Effect service                        |
 | `@supainc/supacatch-node`           | Node.js automatic capture                    |
 | `@supainc/supacatch-bun`            | Bun automatic capture                        |
+| `@supainc/supacatch-browser`        | Browser automatic capture                    |
 | `@supainc/supacatch-cloudflare`     | Cloudflare Worker wrapper                    |
 | `@supainc/supacatch-tanstack-start` | TanStack Start middleware and server wrapper |
 
@@ -25,6 +26,10 @@ npm install @supainc/supacatch-node@alpha
 
 ```sh
 bun add @supainc/supacatch-bun@alpha
+```
+
+```sh
+npm install @supainc/supacatch-browser@alpha
 ```
 
 ## Automatic capture
@@ -51,6 +56,21 @@ const ingestKey = Bun.env.SUPACATCH_INGEST_KEY;
 if (!ingestKey) throw new Error("SUPACATCH_INGEST_KEY is required");
 
 const supaCatch = SupaCatch.init({ ingestKey, environment: "production" });
+```
+
+### Browser
+
+Use a browser public key. Never put a server Ingest Key in client-side bundles or public configuration.
+
+Initialization registers `error` and `unhandledrejection` listeners on the global event target. Capture does not unload or navigate the page.
+
+```ts
+import * as SupaCatch from "@supainc/supacatch-browser";
+
+const publicKey = import.meta.env.VITE_SUPACATCH_PUBLIC_KEY;
+if (!publicKey) throw new Error("VITE_SUPACATCH_PUBLIC_KEY is required");
+
+const supaCatch = SupaCatch.init({ publicKey, environment: "production" });
 ```
 
 ### Cloudflare Workers
@@ -215,7 +235,7 @@ The adapter entry exports runtime initialization, automatic capture registration
 
 ## Privacy and delivery semantics
 
-SupaCatch sends exception names, messages, raw stack strings, capture timestamps, and the configured environment. This release has no redaction hook or source-map processing. Never place an Ingest Key in logs, client-side bundles, or public configuration.
+SupaCatch sends exception names, messages, raw stack strings, capture timestamps, and the configured environment. This release has no redaction hook or source-map processing. Never place a server Ingest Key in logs, client-side bundles, or public configuration. Browser clients use a public key issued for that purpose.
 
 A successful capture means the ingest endpoint accepted the Event into its queue. It does not mean downstream grouping or storage has completed.
 
@@ -223,5 +243,6 @@ A successful capture means the ingest endpoint accepted the Event into its queue
 
 - Node.js 20.19 or newer maintained releases
 - Bun 1.3 or newer
+- Modern browsers with `fetch`, `addEventListener`, and `unhandledrejection`
 - Cloudflare Workers
 - ESM only

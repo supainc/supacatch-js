@@ -7,6 +7,7 @@
       "devDependencies": {
         "@effect/tsgo": "0.36.5",
         "@effect/vitest": "4.0.0-beta.103",
+        "@supainc/supacatch-browser": "workspace:*",
         "@supainc/supacatch-bun": "workspace:*",
         "@supainc/supacatch-cloudflare": "workspace:*",
         "@supainc/supacatch-core": "workspace:*",
@@ -21,6 +22,13 @@
         "publint": "0.3.23",
         "typescript": "7.0.2",
         "vitest": "4.1.10",
+      },
+    },
+    "packages/browser": {
+      "name": "@supainc/supacatch-browser",
+      "version": "0.1.0-alpha.7",
+      "dependencies": {
+        "@supainc/supacatch-core": "0.1.0-alpha.7",
       },
     },
     "packages/bun": {
@@ -216,6 +224,8 @@
     "@rolldown/pluginutils": ["@rolldown/pluginutils@1.0.1", "", {}, "sha512-2j9bGt5Jh8hj+vPtgzPtl72j0yRxHAyumoo6TNfAjsLB04UtpSvPbPcDcBMxz7n+9CYB0c1GxQFxYRg2jimqGw=="],
 
     "@standard-schema/spec": ["@standard-schema/spec@1.1.0", "", {}, "sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w=="],
+
+    "@supainc/supacatch-browser": ["@supainc/supacatch-browser@workspace:packages/browser"],
 
     "@supainc/supacatch-bun": ["@supainc/supacatch-bun@workspace:packages/bun"],
 
