@@ -29,5 +29,4 @@ export {
   installContinuousCapture,
   type FatalAdapterShape,
 } from "./internal/fatal.js";
-export { init as initRuntime } from "./internal/runtime.browser.js";
-export { init as initContinuousRuntime } from "./internal/runtime.browser.js";
+export { init as initRuntime, type RuntimeCapturePolicy } from "./internal/runtime.js";

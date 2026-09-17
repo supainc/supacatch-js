@@ -1,9 +1,9 @@
 import type { SdkConfig, SupaCatchClient } from "@supainc/supacatch-core";
-import { initContinuousRuntime } from "@supainc/supacatch-core/adapter";
+import { initRuntime } from "@supainc/supacatch-core/adapter";
 import { browserFatalAdapter } from "./window-adapter.js";
 
 export const init = (config: SdkConfig): SupaCatchClient =>
-  initContinuousRuntime(config, browserFatalAdapter);
+  initRuntime(config, browserFatalAdapter, "continuous");
 
 export type { SdkConfig, SupaCatchClient } from "@supainc/supacatch-core";
 export {
