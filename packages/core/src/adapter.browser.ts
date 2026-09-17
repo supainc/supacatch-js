@@ -1,4 +1,4 @@
-export { captureAutomatic, registerAutomatic } from "./internal/automatic.js";
+export { captureAutomatic, registerAutomatic } from "./internal/automatic.browser.js";
 export { runWithContext, type CaptureContext } from "./internal/context.js";
 export { once } from "./internal/dedupe.js";
 export {
@@ -8,4 +8,4 @@ export {
   installContinuousCapture,
   type FatalAdapterShape,
 } from "./internal/fatal.js";
-export { init as initRuntime } from "./internal/runtime.js";
+export { init as initRuntime } from "./internal/runtime.browser.js";

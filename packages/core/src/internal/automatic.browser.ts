@@ -1,4 +1,3 @@
-import { AsyncLocalStorage } from "node:async_hooks";
 import { Effect, MutableRef, Option } from "effect";
 import { installContext, type Capture, type CaptureContext } from "./context.js";
 import { once } from "./dedupe.js";
@@ -8,14 +7,22 @@ interface Registration {
   readonly token: symbol;
 }
 
-const requestContext = new AsyncLocalStorage<CaptureContext>();
+let currentContext: CaptureContext | undefined;
 const runtimeCapture = MutableRef.make(Option.none<Registration>());
 
-installContext((context, task) => requestContext.run(context, task));
+installContext((context, task) => {
+  const previous = currentContext;
+  currentContext = context;
+  try {
+    return task();
+  } finally {
+    currentContext = previous;
+  }
+});
 
 export const captureAutomatic = (value: unknown): Effect.Effect<void, unknown> =>
   Effect.suspend(() => {
-    const context = Option.fromNullishOr(requestContext.getStore()).pipe(
+    const context = Option.fromNullishOr(currentContext).pipe(
       Option.orElse(() =>
         Option.map(MutableRef.get(runtimeCapture), (registration) => registration.context),
       ),

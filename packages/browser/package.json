@@ -29,6 +29,7 @@
     "publint": "publint"
   },
   "dependencies": {
-    "@supainc/supacatch-core": "0.1.0-alpha.7"
+    "@supainc/supacatch-core": "0.1.0-alpha.7",
+    "effect": "4.0.0-beta.103"
   }
 }

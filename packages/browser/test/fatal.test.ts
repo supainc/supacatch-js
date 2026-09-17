@@ -117,4 +117,29 @@ describe("browser global handlers", () => {
       restore();
     }
   });
+
+  it("captures successive unhandled errors on the same page", async () => {
+    const restore = installEventTarget();
+    const server = await listen(accepted);
+    const client = SupaCatch.init({ endpoint: server.endpoint, ingestKey: "sck_test_key" });
+
+    try {
+      for (const message of ["browser exception one", "browser exception two"]) {
+        const error = new Error(message);
+        const event = new Event("error") as ErrorEvent;
+        Object.defineProperty(event, "error", { value: error });
+        Object.defineProperty(event, "message", { value: error.message });
+        globalThis.dispatchEvent(event);
+      }
+
+      await Effect.runPromise(Effect.sleep("150 millis"));
+      assert.lengthOf(server.requests, 2);
+      assert.include(server.requests[0]?.body ?? "", '"message":"browser exception one"');
+      assert.include(server.requests[1]?.body ?? "", '"message":"browser exception two"');
+    } finally {
+      client.dispose();
+      await server.close();
+      restore();
+    }
+  });
 });

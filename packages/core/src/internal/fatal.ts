@@ -70,6 +70,45 @@ export const installFatalCapture = Effect.fn("SupaCatch.installFatalCapture")(fu
   };
 });
 
+/** Installs global handlers that keep capturing; for page lifetimes that outlive a single failure. */
+export const installContinuousCapture = Effect.fn("SupaCatch.installContinuousCapture")(function* (
+  capture: (value: unknown) => Promise<void>,
+) {
+  const adapter = yield* FatalAdapter;
+  const token = Symbol("SupaCatchContinuousCapture");
+
+  const removeHandlers = adapter.install((value) => {
+    Effect.runSync(Effect.sync(() => adapter.onFirstFatal(value)).pipe(Effect.ignoreCause));
+    void capture(value);
+    return true;
+  });
+
+  const deactivated = MutableRef.make(false);
+  const deactivate = (): void => {
+    if (!MutableRef.compareAndSet(deactivated, false, true)) return;
+    removeHandlers();
+  };
+
+  const previous = MutableRef.getAndSet(
+    activeGlobalHandlerRegistration,
+    Option.some({ token, deactivate }),
+  );
+  Option.match(previous, {
+    onNone: () => undefined,
+    onSome: (registration) => registration.deactivate(),
+  });
+
+  return () => {
+    const isCurrent = Option.exists(
+      MutableRef.get(activeGlobalHandlerRegistration),
+      (registration) => registration.token === token,
+    );
+    if (!isCurrent) return;
+    MutableRef.set(activeGlobalHandlerRegistration, Option.none());
+    deactivate();
+  };
+});
+
 export const installFatalCaptureScoped = (
   capture: (value: unknown) => Promise<void>,
 ): Effect.Effect<() => void, never, FatalAdapter | Scope.Scope> =>
