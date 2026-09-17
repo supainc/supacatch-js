@@ -1,8 +1,8 @@
 # SupaCatch JavaScript SDKs
 
-Official SupaCatch SDKs for server-side JavaScript. This repository uses a Bun workspace with separate core, runtime, and framework packages.
+Official SupaCatch SDKs for JavaScript. This repository uses a Bun workspace with separate core, runtime, and framework packages.
 
-> Do not bundle a server package into browser code. A SupaCatch Ingest Key is a secret. Browser support requires a separate authentication model and will use `@supainc/supacatch-browser`.
+> Do not bundle a server package (`node` / `bun`) into browser code. Use `@supainc/supacatch-browser`, or the TanStack Start package's browser export, for client-side capture. The Ingest Key is public and is shared by server and browser clients.
 
 ## Packages
 
@@ -12,6 +12,7 @@ Official SupaCatch SDKs for server-side JavaScript. This repository uses a Bun w
 | `@supainc/supacatch-effect`         | Opt-in Effect service                        |
 | `@supainc/supacatch-node`           | Node.js automatic capture                    |
 | `@supainc/supacatch-bun`            | Bun automatic capture                        |
+| `@supainc/supacatch-browser`        | Browser automatic capture                    |
 | `@supainc/supacatch-cloudflare`     | Cloudflare Worker wrapper                    |
 | `@supainc/supacatch-tanstack-start` | TanStack Start middleware and server wrapper |
 
@@ -25,6 +26,10 @@ npm install @supainc/supacatch-node@alpha
 
 ```sh
 bun add @supainc/supacatch-bun@alpha
+```
+
+```sh
+npm install @supainc/supacatch-browser@alpha
 ```
 
 ## Automatic capture
@@ -49,6 +54,19 @@ import * as SupaCatch from "@supainc/supacatch-bun";
 
 const ingestKey = Bun.env.SUPACATCH_INGEST_KEY;
 if (!ingestKey) throw new Error("SUPACATCH_INGEST_KEY is required");
+
+const supaCatch = SupaCatch.init({ ingestKey, environment: "production" });
+```
+
+### Browser
+
+Initialization registers `error` and `unhandledrejection` listeners on the global event target. Capture does not unload or navigate the page. The same Ingest Key used on the server is public and may be embedded in the client.
+
+```ts
+import * as SupaCatch from "@supainc/supacatch-browser";
+
+const ingestKey = import.meta.env.VITE_SUPACATCH_INGEST_KEY;
+if (!ingestKey) throw new Error("VITE_SUPACATCH_INGEST_KEY is required");
 
 const supaCatch = SupaCatch.init({ ingestKey, environment: "production" });
 ```
@@ -78,7 +96,7 @@ When the handler throws or rejects, the wrapper attempts delivery for at most tw
 
 ### TanStack Start
 
-The TanStack Start adapter captures server-side failures from requests, Server Functions, and the server entry point. It uses conditional exports: server builds receive the capture implementation, while browser builds receive middleware stubs with no server handler. The Ingest Key and SDK client therefore never enter the browser module graph.
+The TanStack Start adapter captures server-side failures from requests, Server Functions, and the server entry point. On the browser export it registers client Server Function middleware and exposes `init` for `error` / `unhandledrejection` capture, the same Ingest Key as the server.
 
 Add the two global middlewares first in their arrays. Import them directly from the package; do not put them in a `*.server.ts` module because `src/start.ts` is also transformed for the browser.
 
@@ -96,7 +114,36 @@ export const startInstance = createStart(() => ({
 }));
 ```
 
-Initialize the runtime in an explicit server entry and wrap its handler. Runtime initialization registers the capture client used by the global middlewares.
+Initialize the browser SDK from the client entry so hydration-time failures are captured:
+
+```ts
+// src/instrument.client.ts
+import * as SupaCatch from "@supainc/supacatch-tanstack-start";
+
+const ingestKey = import.meta.env.VITE_SUPACATCH_INGEST_KEY;
+if (!ingestKey) throw new Error("VITE_SUPACATCH_INGEST_KEY is required");
+
+SupaCatch.init({ ingestKey, environment: "production" });
+```
+
+```ts
+// src/client.tsx
+import "./instrument.client";
+import { StartClient } from "@tanstack/react-start/client";
+import { StrictMode, startTransition } from "react";
+import { hydrateRoot } from "react-dom/client";
+
+startTransition(() => {
+  hydrateRoot(
+    document,
+    <StrictMode>
+      <StartClient />
+    </StrictMode>,
+  );
+});
+```
+
+Initialize the runtime in an explicit server entry and wrap its handler. Runtime initialization registers the capture client used by the global middlewares. On Node.js or Bun, prefer the runtime package `init` so process-level handlers are installed too.
 
 ```ts
 // src/server.ts
@@ -215,7 +262,7 @@ The adapter entry exports runtime initialization, automatic capture registration
 
 ## Privacy and delivery semantics
 
-SupaCatch sends exception names, messages, raw stack strings, capture timestamps, and the configured environment. This release has no redaction hook or source-map processing. Never place an Ingest Key in logs, client-side bundles, or public configuration.
+SupaCatch sends exception names, messages, raw stack strings, capture timestamps, and the configured environment. This release has no redaction hook or source-map processing. The Ingest Key is public and may appear in browser bundles.
 
 A successful capture means the ingest endpoint accepted the Event into its queue. It does not mean downstream grouping or storage has completed.
 
@@ -223,5 +270,6 @@ A successful capture means the ingest endpoint accepted the Event into its queue
 
 - Node.js 20.19 or newer maintained releases
 - Bun 1.3 or newer
+- Modern browsers with `fetch`, `addEventListener`, and `unhandledrejection`
 - Cloudflare Workers
 - ESM only

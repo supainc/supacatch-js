@@ -29,6 +29,7 @@ type FunctionMiddlewareTypes = {
 
 type TanStackMiddlewareOptions = {
   readonly server?: (...arguments_: Array<any>) => any;
+  readonly client?: (...arguments_: Array<any>) => any;
 };
 
 export type SupaCatchRequestMiddleware = {

@@ -1,34 +1,22 @@
 {
-  "name": "@supainc/supacatch-core",
+  "name": "@supainc/supacatch-browser",
   "version": "0.1.0-alpha.7",
-  "description": "Core SupaCatch JavaScript SDK",
+  "description": "SupaCatch SDK for browsers",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/supainc/supacatch-js.git",
-    "directory": "packages/core"
+    "directory": "packages/browser"
   },
   "files": [
     "dist"
   ],
   "type": "module",
-  "sideEffects": [
-    "./dist/internal/automatic.js",
-    "./dist/internal/automatic.browser.js"
-  ],
+  "sideEffects": false,
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
-    },
-    "./adapter": {
-      "types": "./dist/adapter.d.ts",
-      "workerd": "./dist/adapter.js",
-      "worker": "./dist/adapter.js",
-      "node": "./dist/adapter.js",
-      "bun": "./dist/adapter.js",
-      "browser": "./dist/adapter.browser.js",
-      "import": "./dist/adapter.js"
     },
     "./package.json": "./package.json"
   },
@@ -41,9 +29,7 @@
     "publint": "publint"
   },
   "dependencies": {
+    "@supainc/supacatch-core": "0.1.0-alpha.7",
     "effect": "4.0.0-beta.103"
-  },
-  "engines": {
-    "node": ">=20.19.0"
   }
 }

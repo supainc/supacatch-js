@@ -26,8 +26,10 @@ jobs:
         run: |
           for package in \
             packages/core \
+            packages/effect \
             packages/node \
             packages/bun \
+            packages/browser \
             packages/cloudflare \
             packages/tanstack-start
           do

@@ -1,5 +1,5 @@
 # Security
 
-Please report vulnerabilities privately through GitHub Security Advisories for this repository. Do not open a public issue containing credentials or exploit details.
+Please report vulnerabilities privately through GitHub Security Advisories for this repository. Do not open a public issue containing exploit details.
 
-Never include a SupaCatch Ingest Key in a report. Rotate any key that may have been exposed.
+SupaCatch Ingest Keys are public client credentials. Prefer not to paste a live project key into a report when rotating the key is enough.
