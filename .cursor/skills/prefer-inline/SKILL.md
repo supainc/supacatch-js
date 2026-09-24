@@ -19,8 +19,9 @@ that hides it.
 
 - The body has real behavior. Branching, side effects, invariants, or more than
   one step that the expression does not already show.
-- The name marks a public boundary. An exported API, a domain method, or a
-  command.
+- The name marks a public boundary that encodes a decision or state transition:
+  a predicate, a transition, or a selection among candidates. An exported API
+  or a command.
 
 ## Keep inline when
 
@@ -28,6 +29,7 @@ that hides it.
 - The helper has one caller.
 - Call sites would read the same or better with the expression itself, even if
   it appears twice.
+- Two apps share a small table or map. Copy it into each app.
 
 Before you extract, read the call site with the body pasted in. If the reader
 already knows what it does, leave it there.
@@ -57,3 +59,7 @@ A parse at a system boundary that turns untrusted input into a domain value.
   that only forwards is still a wrapper. Inline it.
 - Two call sites sharing a URL template, equality check, or field read is not a
   missing helper. Shared decisions are.
+- Two apps sharing a small table or map is not a missing shared module. Copy it
+  per app. A new export from a shared package needs a reason beyond two callers.
+- A domain getter that only renames a field read, filters, or hashes its
+  argument is still a forwarder. The boundary is the decision, not the class.

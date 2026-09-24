@@ -15,8 +15,6 @@ Use **/poteto-mode**.
 
 Follow **/prefer-inline** for all code you write.
 
-Follow **/ddd** when touching doman layers (new aggregates, commands/queries, repositories, layer placement).
-
 ## Effect
 
 Use Effect everywhere you can. Prefer Effect helpers over ad-hoc control flow, bare Promises, and one-off error handling. Use the **effect-ts** skill when one is attached.
