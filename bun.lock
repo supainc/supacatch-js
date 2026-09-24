@@ -26,38 +26,38 @@
     },
     "packages/browser": {
       "name": "@supainc/supacatch-browser",
-      "version": "0.1.0-alpha.7",
+      "version": "0.1.0-alpha.8",
       "dependencies": {
-        "@supainc/supacatch-core": "0.1.0-alpha.7",
+        "@supainc/supacatch-core": "0.1.0-alpha.8",
       },
     },
     "packages/bun": {
       "name": "@supainc/supacatch-bun",
-      "version": "0.1.0-alpha.7",
+      "version": "0.1.0-alpha.8",
       "dependencies": {
-        "@supainc/supacatch-node": "0.1.0-alpha.7",
+        "@supainc/supacatch-node": "0.1.0-alpha.8",
       },
     },
     "packages/cloudflare": {
       "name": "@supainc/supacatch-cloudflare",
-      "version": "0.1.0-alpha.7",
+      "version": "0.1.0-alpha.8",
       "dependencies": {
-        "@supainc/supacatch-core": "0.1.0-alpha.7",
+        "@supainc/supacatch-core": "0.1.0-alpha.8",
         "effect": "4.0.0-beta.103",
       },
     },
     "packages/core": {
       "name": "@supainc/supacatch-core",
-      "version": "0.1.0-alpha.7",
+      "version": "0.1.0-alpha.8",
       "dependencies": {
         "effect": "4.0.0-beta.103",
       },
     },
     "packages/effect": {
       "name": "@supainc/supacatch-effect",
-      "version": "0.1.0-alpha.7",
+      "version": "0.1.0-alpha.8",
       "dependencies": {
-        "@supainc/supacatch-core": "0.1.0-alpha.7",
+        "@supainc/supacatch-core": "0.1.0-alpha.8",
       },
       "peerDependencies": {
         "effect": "^4.0.0-beta.103",
@@ -65,18 +65,18 @@
     },
     "packages/node": {
       "name": "@supainc/supacatch-node",
-      "version": "0.1.0-alpha.7",
+      "version": "0.1.0-alpha.8",
       "dependencies": {
-        "@supainc/supacatch-core": "0.1.0-alpha.7",
+        "@supainc/supacatch-core": "0.1.0-alpha.8",
       },
     },
     "packages/tanstack-start": {
       "name": "@supainc/supacatch-tanstack-start",
-      "version": "0.1.0-alpha.7",
+      "version": "0.1.0-alpha.8",
       "dependencies": {
-        "@supainc/supacatch-browser": "0.1.0-alpha.7",
-        "@supainc/supacatch-cloudflare": "0.1.0-alpha.7",
-        "@supainc/supacatch-core": "0.1.0-alpha.7",
+        "@supainc/supacatch-browser": "0.1.0-alpha.8",
+        "@supainc/supacatch-cloudflare": "0.1.0-alpha.8",
+        "@supainc/supacatch-core": "0.1.0-alpha.8",
         "effect": "4.0.0-beta.103",
       },
     },

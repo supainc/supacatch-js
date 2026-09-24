@@ -1,6 +1,6 @@
 {
   "name": "@supainc/supacatch-browser",
-  "version": "0.1.0-alpha.7",
+  "version": "0.1.0-alpha.8",
   "description": "SupaCatch SDK for browsers",
   "license": "MIT",
   "repository": {
@@ -29,6 +29,6 @@
     "publint": "publint"
   },
   "dependencies": {
-    "@supainc/supacatch-core": "0.1.0-alpha.7"
+    "@supainc/supacatch-core": "0.1.0-alpha.8"
   }
 }
